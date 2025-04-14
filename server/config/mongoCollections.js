@@ -16,7 +16,6 @@ const getCollectionFn = (collection) => {
 };
 
 
-/* Now, you can list your collections here: */
-export const artists = getCollectionFn('artists');
-export const albums = getCollectionFn('albums');
+export const users = getCollectionFn('users');
+export const places = getCollectionFn('places');
 export const recordCompanies = getCollectionFn('recordcompanies');
