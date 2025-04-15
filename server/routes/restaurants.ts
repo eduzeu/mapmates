@@ -71,3 +71,4 @@ router.route("/delete")
     }
   })
 
+export default router;
