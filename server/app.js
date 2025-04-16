@@ -4,7 +4,14 @@ import session from "express-session";
 
 
 const app = express();
+app.use(session({
+  name: 'AuthenticationState',
+  secret: 'some secret string!',
+  resave: false,
+  saveUninitialized: false
+}))
 app.use(express.json);
+
 
 configRoutes(app);
 
