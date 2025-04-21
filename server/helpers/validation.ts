@@ -1,6 +1,7 @@
-import { ValidationError } from "./errors.ts";
+import { isDate, isValid, parse } from "date-fns";
 import { ObjectId } from "mongodb";
-import { parse, isValid } from "date-fns";
+import * as uuid from "uuid";
+import { ValidationError } from "./errors.ts";
 
 export const validateString = (str: any, strName?: string): string => {
   if (typeof str === "undefined")
@@ -10,15 +11,13 @@ export const validateString = (str: any, strName?: string): string => {
 
   if (!str)
     throw new ValidationError(
-      `${
-        strName || "Provided parameter"
+      `${strName || "Provided parameter"
       } is an empty string or evaluates to false.`
     );
 
   if (typeof str !== "string")
     throw new ValidationError(
-      `${
-        strName || "Provided data"
+      `${strName || "Provided data"
       } is not of type 'string', but of type '${typeof str}'.`
     );
 
@@ -44,6 +43,21 @@ export const validateObjectId = (
   return objectId;
 };
 
+export const validateDate = (date: any, dateName?: string): Date => {
+  if (!isDate(date))
+    throw new ValidationError(
+      `${dateName || "Provided data"} is not a Date object.`
+    );
+    
+  if (!isValid(date))
+    throw new ValidationError(
+      `${dateName || "Provided date"} is not a valid.`
+    );
+
+  return date;
+
+}
+
 export const validateDateString = (date: any, dateName?: string): string => {
   date = validateString(date, dateName);
 
@@ -54,4 +68,63 @@ export const validateDateString = (date: any, dateName?: string): string => {
     );
 
   return date;
+};
+
+export const validateEmailAddress = (
+  email: any,
+  emailName?: string
+): string => {
+  email = validateString(email, emailName);
+
+  // regex source: https://www.geeksforgeeks.org/javascript-program-to-validate-an-email-address/
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!regex.test(email)) {
+    throw new ValidationError(
+      `${emailName || "Provided string"} is not a valid email address.`
+    );
+  }
+  return email;
+};
+
+export const validatePassword = (
+  password: any,
+  passwordName?: string
+): string => {
+  password = validateString(password, passwordName);
+
+  if (password.length < 8) {
+    throw new ValidationError("Password must be at least 8 characters long.");
+  }
+
+  const lowerRegex = /[a-z]+/g;
+  if (!lowerRegex.test(password)) {
+    throw new ValidationError(
+      "Password must contain at least one lowercase letter."
+    );
+  }
+
+  const upperRegex = /[A-Z]+/g;
+  if (!upperRegex.test(password)) {
+    throw new ValidationError(
+      "Password must contain at least one uppercase letter."
+    );
+  }
+
+  const symbolRegex = /[^A-Za-z0-9]+/g;
+  if (!symbolRegex.test(password)) {
+    throw new ValidationError("Password must contain at least one symbol.");
+  }
+
+  return password;
+};
+
+export const validateUUID = (id: any, idName?: string): string => {
+  id = validateString(id, idName);
+
+  if (!uuid.validate(id))
+    throw new ValidationError(
+      `${idName || "Provided data"} is not a valid UUID.`
+    );
+
+  return id;
 };

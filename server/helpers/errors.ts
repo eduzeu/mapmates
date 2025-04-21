@@ -10,7 +10,7 @@ abstract class DataError extends Error {
   }
 }
 
-export class DatabaseError extends DataError {
+export class ServerError extends DataError {
   constructor(message) {
     super(message, "DatabaseError", 500);
   }

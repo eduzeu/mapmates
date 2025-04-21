@@ -1,10 +1,10 @@
 import axios from "axios";
 import * as dotenv from 'dotenv';
+import { ObjectId } from "mongodb";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { users as usersCollection } from "../config/mongoCollections.js";
-import { ObjectId } from "mongodb";
-import { checkForDate, checkForId, checkForName, checkForType } from "./errorCheck.ts";
+import { validateDate, validateObjectId, validateString } from "../helpers/validation.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -110,7 +110,7 @@ export const getRestaurants = async () => {
 export const getRestaurantsById = async (id: string) => {
   try {
 
-    id = checkForId(id);
+    id = validateObjectId(id);
     const response = await axios.get(`https://api.geoapify.com/v2/places?categories=catering.restaurant&filter=circle:-74.028,40.743,1000&limit=20&apiKey=${apiKey}`);
 
     // console.log(response);
@@ -131,10 +131,10 @@ export const getRestaurantsById = async (id: string) => {
 export const addRestaurant = async (name: string, type: string, visitDate: Date, id: string) => {
   try {
 
-    name = checkForName(name);
-    type = checkForType(type);
-    visitDate = checkForDate(visitDate);
-    id = checkForId(id);
+    name = validateString(name);
+    type = validateString(type);
+    visitDate = validateDate(visitDate);
+    id = validateObjectId(id);
 
     const coordinates = await getCoordinates();
     //now insert into mongo
@@ -165,8 +165,8 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
 export const deleteRestaurant = async (id: string, name: string) => {
   try {
 
-    id = checkForId(id);
-    name = checkForName(name);
+    id = validateObjectId(id);
+    name = validateString(name);
 
     const users = await usersCollection();
 
@@ -188,7 +188,7 @@ export const deleteRestaurant = async (id: string, name: string) => {
 
 export const searchRestaurants = async (type: string) => {
   try {
-    type = checkForType(type);
+    type = validateString(type);
 
     const response = await axios.get<{ features: Feature[] }>(
       `https://api.geoapify.com/v2/places?categories=catering.restaurant&filter=circle:-74.028,40.743,1000&limit=20&apiKey=${apiKey}`

@@ -1,11 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Collection, InsertOneResult, ObjectId } from 'mongodb';
 import { users } from '../config/mongoCollections.js';
-import {
-  validateEmailAddress,
-  validatePassword,
-  validateString,
-} from '../helpers.js';
+import { validateEmailAddress, validatePassword, validateString } from '../helpers/validation.ts';
 
 
 export interface User {
