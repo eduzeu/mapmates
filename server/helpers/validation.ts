@@ -1,7 +1,7 @@
-import { ValidationError } from "./errors.ts";
+import { isDate, isValid, parse } from "date-fns";
 import { ObjectId } from "mongodb";
-import { parse, isValid } from "date-fns";
 import * as uuid from "uuid";
+import { ValidationError } from "./errors.ts";
 
 export const validateString = (str: any, strName?: string): string => {
   if (typeof str === "undefined")
@@ -11,15 +11,13 @@ export const validateString = (str: any, strName?: string): string => {
 
   if (!str)
     throw new ValidationError(
-      `${
-        strName || "Provided parameter"
+      `${strName || "Provided parameter"
       } is an empty string or evaluates to false.`
     );
 
   if (typeof str !== "string")
     throw new ValidationError(
-      `${
-        strName || "Provided data"
+      `${strName || "Provided data"
       } is not of type 'string', but of type '${typeof str}'.`
     );
 
@@ -44,6 +42,21 @@ export const validateObjectId = (
 
   return objectId;
 };
+
+export const validateDate = (date: any, dateName?: string): Date => {
+  if (!isDate(date))
+    throw new ValidationError(
+      `${dateName || "Provided data"} is not a Date object.`
+    );
+    
+  if (!isValid(date))
+    throw new ValidationError(
+      `${dateName || "Provided date"} is not a valid.`
+    );
+
+  return date;
+
+}
 
 export const validateDateString = (date: any, dateName?: string): string => {
   date = validateString(date, dateName);
