@@ -1,15 +1,15 @@
 import { ObjectId } from "mongodb";
 import { reviews } from "../config/mongoCollections.js";
 import {
-  validateDateString,
-  validateObjectId,
-  validateString,
-} from "../helpers/validation.ts";
-import {
-  DatabaseError,
-  NotFoundError,
-  ValidationError,
+    NotFoundError,
+    ServerError,
+    ValidationError,
 } from "../helpers/errors.ts";
+import {
+    validateDateString,
+    validateObjectId,
+    validateString,
+} from "../helpers/validation.ts";
 import { restaurantExists } from "./restaurants.ts";
 
 export interface Review {
@@ -57,7 +57,7 @@ export const addReview = async (
   const insertInfo = await collection.insertOne(newReview);
 
   if (!insertInfo.acknowledged || !insertInfo.insertedId)
-    throw new DatabaseError("Could not add the artist.");
+    throw new ServerError("Could not add the artist.");
 
   const newId = insertInfo.insertedId.toString();
   return await getReviewById(newId);
@@ -92,7 +92,7 @@ export const updateReview = async (
   );
 
   if (!updateInfo?.ok || !updateInfo?.value)
-    throw new DatabaseError("Could not update the review.");
+    throw new ServerError("Could not update the review.");
 
   return updateInfo.value;
 };
@@ -109,7 +109,7 @@ export const deleteReview = async (id: string): Promise<Review> => {
   const deleteResult = await collection.deleteOne({ _id: new ObjectId(id) });
 
   if (deleteResult.deletedCount === 0)
-    throw new DatabaseError(`Could not delete the review with the id '${id}'.`);
+    throw new ServerError(`Could not delete the review with the id '${id}'.`);
 
   return review;
 };
