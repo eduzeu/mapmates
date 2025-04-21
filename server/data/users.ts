@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { Collection, InsertOneResult, ObjectId } from 'mongodb';
 import { users } from '../config/mongoCollections.js';
 import { validateEmailAddress, validatePassword, validateString } from '../helpers/validation.ts';
+import { ca } from 'date-fns/locale';
 
 
 export interface User {
@@ -11,6 +12,7 @@ export interface User {
   password: string;
   reviews: any[];
   friends: any[];
+  badges: any[];
 }
 
 const saltRounds = 16;
@@ -40,6 +42,7 @@ export const addNewUser = async (
     password: hashedPass,
     reviews: [],
     friends: [],
+    badges: []
   };
 
   const insertInfo = await userCollection.insertOne(userObj);
@@ -73,3 +76,4 @@ export const checkUser = async (
 
   return user._id as ObjectId;
 };
+
