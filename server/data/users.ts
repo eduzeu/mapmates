@@ -1,0 +1,79 @@
+import bcrypt from 'bcrypt';
+import { Collection, InsertOneResult, ObjectId } from 'mongodb';
+import { users } from '../config/mongoCollections.js';
+import {
+  validateEmailAddress,
+  validatePassword,
+  validateString,
+} from '../helpers.js';
+
+
+export interface User {
+  _id?: ObjectId;
+  username: string;
+  email: string;
+  password: string;
+  reviews: any[];
+  friends: any[];
+}
+
+const saltRounds = 16;
+
+export const addNewUser = async (
+  username: string,
+  email: string,
+  password: string
+): Promise<InsertOneResult<User>> => {
+  username = validateString(username, 'Username');
+  email = validateEmailAddress(email, 'Email');
+  password = validatePassword(password, 'Password');
+
+  const userCollection: Collection<User> = await users();
+  const eUser = await userCollection.findOne({ email: email.toLowerCase() });
+  const uUser = await userCollection.findOne({ username: username.toLowerCase() });
+
+  if (eUser || uUser) {
+    throw new Error('Account exists!');
+  }
+
+  const hashedPass = await bcrypt.hash(password, saltRounds);
+
+  const userObj: User = {
+    username: username.toLowerCase(),
+    email: email.toLowerCase(),
+    password: hashedPass,
+    reviews: [],
+    friends: [],
+  };
+
+  const insertInfo = await userCollection.insertOne(userObj);
+
+  if (!insertInfo.acknowledged || !insertInfo.insertedId) {
+    throw new Error('Failed to insert user');
+  }
+
+  return insertInfo;
+};
+
+export const checkUser = async (
+  username: string,
+  password: string
+): Promise<ObjectId> => {
+  username = validateString(username, 'Username').toLowerCase();
+  password = validateString(password, 'Password');
+
+  const userCollection: Collection<User> = await users();
+  const user = await userCollection.findOne({ username });
+
+  if (!user) {
+    throw new Error('Invalid Login');
+  }
+
+  const isValid = await bcrypt.compare(password, user.password);
+
+  if (!isValid) {
+    throw new Error('Invalid Login');
+  }
+
+  return user._id as ObjectId;
+};
