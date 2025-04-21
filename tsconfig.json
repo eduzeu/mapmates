@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     /* Language and Environment */
     "target": "es2016", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "module": "ES2020", /* Specify what module code is generated. */
-    "moduleResolution": "node", /* Explicitly set module resolution strategy to 'node' */
+    "moduleResolution": "bundler", /* Explicitly set module resolution strategy to 'node' */
     "rootDir": "./", /* Specify the root folder within your source files. */
     "types": [
       "node"
