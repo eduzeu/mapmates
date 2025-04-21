@@ -1,6 +1,7 @@
 import { ValidationError } from "./errors.ts";
 import { ObjectId } from "mongodb";
 import { parse, isValid } from "date-fns";
+import * as uuid from "uuid";
 
 export const validateString = (str: any, strName?: string): string => {
   if (typeof str === "undefined")
@@ -54,4 +55,63 @@ export const validateDateString = (date: any, dateName?: string): string => {
     );
 
   return date;
+};
+
+export const validateEmailAddress = (
+  email: any,
+  emailName?: string
+): string => {
+  email = validateString(email, emailName);
+
+  // regex source: https://www.geeksforgeeks.org/javascript-program-to-validate-an-email-address/
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!regex.test(email)) {
+    throw new ValidationError(
+      `${emailName || "Provided string"} is not a valid email address.`
+    );
+  }
+  return email;
+};
+
+export const validatePassword = (
+  password: any,
+  passwordName?: string
+): string => {
+  password = validateString(password, passwordName);
+
+  if (password.length < 8) {
+    throw new ValidationError("Password must be at least 8 characters long.");
+  }
+
+  const lowerRegex = /[a-z]+/g;
+  if (!lowerRegex.test(password)) {
+    throw new ValidationError(
+      "Password must contain at least one lowercase letter."
+    );
+  }
+
+  const upperRegex = /[A-Z]+/g;
+  if (!upperRegex.test(password)) {
+    throw new ValidationError(
+      "Password must contain at least one uppercase letter."
+    );
+  }
+
+  const symbolRegex = /[^A-Za-z0-9]+/g;
+  if (!symbolRegex.test(password)) {
+    throw new ValidationError("Password must contain at least one symbol.");
+  }
+
+  return password;
+};
+
+export const validateUUID = (id: any, idName?: string): string => {
+  id = validateString(id, idName);
+
+  if (!uuid.validate(id))
+    throw new ValidationError(
+      `${idName || "Provided data"} is not a valid UUID.`
+    );
+
+  return id;
 };
