@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { users as usersCollection } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
-import { checkForDate, checkForId, checkForName, checkForType } from "./errorCheck.js";
+import { checkForDate, checkForId, checkForName, checkForType } from "./errorCheck.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -241,3 +241,8 @@ export const searchRestaurants = async (type: string) => {
 //   const result = await searchRestaurants("chinese");
 //   console.log(result);
 // })();
+
+export const restaurantExists = async (id: string): Promise<boolean> => {
+  let restaurant = await getRestaurantsById(id);
+  return restaurant !== null;
+}

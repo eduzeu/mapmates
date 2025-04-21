@@ -1,14 +1,20 @@
-import restaurants from "./restaurants";
-import users from "./users";
+import restaurants from "./restaurants.ts";
+import reviews from "./reviews.ts";
+import express from "express";
 
-const constructorMethod = (app: any) => {
+const constructorMethod = (app: express.Express) => {
+  console.log("Registering /restaurants route");
   app.use("/restaurants", restaurants);
-  app.use("/users", users)
-  app.use("*", (req: any, res: any) => {
+
+  console.log("Registering /reviews route");
+  app.use("/reviews", reviews);
+
+  console.log("Registering catch-all route");
+  app.use((_: express.Request, res: express.Response) => {
     res.status(404).json({ error: "Not found" });
   });
 
-
+  console.log("Registered all routes")
 }
 
 export default constructorMethod;

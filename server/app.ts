@@ -2,7 +2,6 @@ import express from "express";
 import configRoutes from "./routes/index.ts";
 import session from "express-session";
 
-
 const app = express();
 app.use(session({
   name: 'AuthenticationState',
