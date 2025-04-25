@@ -5,6 +5,62 @@
   text-align: center;
 }
 
+/* NavBar container styling */
+.navBarContainer {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+/* Menu button styling */
+.menuButton {
+  background-color: #EDA2C0;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.menuButton:hover {
+  background-color: #e87daa;
+}
+
+/* Dropdown menu styling */
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 5px;
+  background-color: #EDA2C0;
+  border-radius: 5px;
+  padding: 10px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+/* Menu item styling */
+.dropdownMenu a {
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
+  transition: background-color 0.2s;
+}
+
+.dropdownMenu a:hover {
+  background-color: #e87daa;
+}
+
+ .dropdownMenu a.active {
+  font-weight: bold;
+  background-color: #e87daa;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
