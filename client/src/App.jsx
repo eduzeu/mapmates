@@ -16,7 +16,6 @@ function App() {
   return (
     <Router>
     <div className="App">
-      <h1>Welcome to MapMates :)</h1>
       <NavBar />
       <div className="content">
         <Routes>

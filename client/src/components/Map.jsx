@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import userIconImg from '../assets/user.png'; 
-
+import { RestButton, ButtonContainer } from "./RestButton";
 const hobokenBounds = [
   [40.7684, -74.0401], 
   [40.7311, -74.0122]  
@@ -63,14 +63,26 @@ function LocationMarker() {
 }
 
 function Map() {
+
+  const displayRestaurants =async () => {
+    
+  }
+
+
   const hobokenCenter = [40.7440, -74.0254];
 
+
   return (
+    <>
+    <div>
+   <h1> Welcome to your Map: </h1>
+   </div>
     <div style={{ height: '500px', width: '100%' }}>
-      <MapContainer 
+
+       <MapContainer 
         center={hobokenCenter} 
         zoom={15} 
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', borderRadius: '10px' }}
         maxBounds={hobokenBounds}
         maxBoundsViscosity={1.0}
         minZoom={14}
@@ -82,7 +94,15 @@ function Map() {
         <MapBoundary />
         <LocationMarker />
       </MapContainer>
+      <div>
+        <ButtonContainer>
+      <RestButton text="Add Restaurant" />
+       <RestButton text="Delete Restaurant" />
+      </ButtonContainer>
+
+      </div>
     </div>
+    </>
   );
 };
 
