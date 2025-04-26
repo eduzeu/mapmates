@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
     /* Language and Environment */
     "target": "es2016", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "module": "ES2020", /* Specify what module code is generated. */
-    "moduleResolution": "bundler", /* Explicitly set module resolution strategy to 'node' */
+    "moduleResolution": "node",
     "rootDir": "./", /* Specify the root folder within your source files. */
     "types": [
       "node"
@@ -14,7 +12,6 @@
     /* Strict Type-Checking   */
     "strict": true, /* Enable all strict type-checking options. */
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
-    "esModuleInterop": true, /* Enable compatibility between ES modules and CommonJS. */
     /* Type Checking */
     "noImplicitAny": false, /* Allow variables to implicitly have the 'any' type. */
     "noUnusedLocals": true, /* Enable error reporting when local variables aren't read. */
@@ -25,8 +22,12 @@
     "allowJs": true, /* Allow JavaScript files to be part of your program. */
     /* Output and Source Maps */
     "sourceMap": true, /* Create source map files for emitted JavaScript files. */
-    "outDir": "./dist", /* Specify an output folder for all emitted files. */
+    "outDir": ".build", /* Specify an output folder for all emitted files. */
     /* Others */
     "skipDefaultLibCheck": true, /* Skip type checking .d.ts files that are included with TypeScript. */
+    "esModuleInterop": true, /* Enable compatibility between ES modules and CommonJS. */
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "declaration": true,
   }
 }
