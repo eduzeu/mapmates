@@ -1,6 +1,6 @@
 import { Collection, Document, ObjectId } from "mongodb";
 import { sessionTokens, users } from "../config/mongoCollections.js";
-import { validateDate, validateObjectId, validateUUID } from "../helpers/validation.ts";
+import { validateDate, validateObjectId, validateUUID } from "../helpers/validation";
 
 interface SessionToken {
   sessionId: string;
@@ -40,7 +40,7 @@ export const addSessionToken = async (
 export const findUserFromSessionToken = async (
   sessionToken: string
 ): Promise<User> => {
-    let validSessionToken: string = validateUUID(sessionToken, "Session Token");
+  let validSessionToken: string = validateUUID(sessionToken, "Session Token");
 
   const sessionTokensCollection: Collection<SessionToken> = await sessionTokens();
   const session = await sessionTokensCollection.findOne({

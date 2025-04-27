@@ -3,8 +3,8 @@ import * as dotenv from 'dotenv';
 import { ObjectId } from "mongodb";
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { users as usersCollection } from "../config/mongoCollections.js";
-import { validateDate, validateObjectId, validateString } from "../helpers/validation.ts";
+import { users as usersCollection } from "../config/mongoCollections";
+import { validateDate, validateObjectId, validateString } from "../helpers/validation";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -110,7 +110,7 @@ export const getRestaurants = async () => {
 export const getRestaurantsById = async (id: string) => {
   try {
 
-    id = validateObjectId(id);
+    // id = validateObjectId(id);
     const response = await axios.get(`https://api.geoapify.com/v2/places?categories=catering.restaurant&filter=circle:-74.028,40.743,1000&limit=20&apiKey=${apiKey}`);
 
     // console.log(response);
@@ -136,7 +136,7 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
     visitDate = validateDate(visitDate);
     id = validateObjectId(id);
 
-    const coordinates = await getCoordinates();
+    // const coordinates = await getCoordinates();
     //now insert into mongo
     const users = await usersCollection();
 
@@ -144,7 +144,7 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
       place: name,
       cuisine: type,
       visitedAt: visitDate,
-      coordinates: coordinates
+      coordinates: null
 
     }
 
@@ -157,33 +157,50 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
 
   } catch (e: unknown) {
     const error = e as Error;
-    console.error(error.message);
+    console.error("error adding resgtaurant: ", error.message);
     return null;
   }
 }
 
+
 export const deleteRestaurant = async (id: string, name: string) => {
   try {
-
     id = validateObjectId(id);
     name = validateString(name);
 
     const users = await usersCollection();
 
-    const findUserAndDelete = await users.updateOne(
+    const user = await users.findOne({ _id: new ObjectId(id) });
+
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    const placeExists = user.visitedPlaces.some((place: any) => place.place === name);
+
+    if (!placeExists) {
+      return { error: `Place ${name} not found in visitedPlaces` };
+    }
+
+    const result = await users.updateOne(
       { _id: new ObjectId(id) },
       { $pull: { visitedPlaces: { place: name } } }
     );
 
-    return findUserAndDelete;
+    console.log(result);
+
+    if (result.modifiedCount > 0) {
+      return { message: `Place ${name} successfully deleted from visitedPlaces` };
+    } else {
+      return { error: "Failed to delete the place" };
+    }
 
   } catch (e: unknown) {
     const error = e as Error;
     console.error(error.message);
-    return null;
-
+    return { error: error.message };
   }
-}
+};
 
 
 export const searchRestaurants = async (type: string) => {

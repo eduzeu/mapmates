@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Collection, InsertOneResult, ObjectId } from 'mongodb';
 import { users } from '../config/mongoCollections.js';
-import { validateEmailAddress, validatePassword, validateString } from '../helpers/validation.ts';
+import { validateEmailAddress, validatePassword, validateString } from '../helpers/validation';
 import { ca } from 'date-fns/locale';
 
 
@@ -13,6 +13,12 @@ export interface User {
   reviews: any[];
   friends: any[];
   badges: any[];
+  visitedPlaces?: {
+    place: string;
+    cuisine: string;
+    visitedAt: Date;
+    coordinates: { lat: number; long: number };
+  }[];
 }
 
 const saltRounds = 16;

@@ -2,8 +2,8 @@ import { Router, Request, Response } from "express";
 import * as uuid from "uuid";
 import xss from "xss";
 import * as sessionTokenFunctions from "../data/sessionTokens";
-import * as userFunctions from "../data/users.js";
-import { validateEmailAddress, validatePassword, validateString } from "../helpers/validation.ts";
+import * as userFunctions from "../data/users";
+import { validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
 const router = Router();
 
 router.route("/")

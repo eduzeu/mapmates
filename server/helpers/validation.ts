@@ -1,7 +1,7 @@
 import { isDate, isValid, parse } from "date-fns";
 import { ObjectId } from "mongodb";
 import * as uuid from "uuid";
-import { ValidationError } from "./errors.ts";
+import { ValidationError } from "./errors";
 
 export const validateString = (str: any, strName?: string): string => {
   if (typeof str === "undefined")
@@ -48,7 +48,7 @@ export const validateDate = (date: any, dateName?: string): Date => {
     throw new ValidationError(
       `${dateName || "Provided data"} is not a Date object.`
     );
-    
+
   if (!isValid(date))
     throw new ValidationError(
       `${dateName || "Provided date"} is not a valid.`

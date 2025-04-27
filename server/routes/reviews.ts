@@ -1,6 +1,6 @@
 import express, { Router } from "express";
-import { handleErrors } from "../helpers/errors.ts";
-import { validateDateString, validateString } from "../helpers/validation.ts";
+import { handleErrors } from "../helpers/errors";
+import { validateDateString, validateString } from "../helpers/validation";
 import {
   deleteReview,
   getReviewById,
@@ -115,7 +115,7 @@ router.route("/restaurant/:id").get(async (req: express.Request, res: express.Re
 //   try {
 //     let reviews = await reviewsByUser(id);
 //     res.status(200).json(reviews);
-    
+
 //   } catch (e) {
 //     handleErrors(res, e, 500);
 //   }

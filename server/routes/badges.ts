@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { earnFriendBadge, earnReviewBadge } from "../data/badges.ts";
+import { earnFriendBadge, earnReviewBadge } from "../data/badges";
 import { validateString } from "../helpers/validation";
 
 const router = Router();

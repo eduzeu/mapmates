@@ -2,7 +2,7 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "es2016", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
-    "module": "ES2020", /* Specify what module code is generated. */
+    "module": "esnext",
     "moduleResolution": "node",
     "rootDir": "./", /* Specify the root folder within your source files. */
     "types": [
@@ -26,6 +26,7 @@
     /* Others */
     "skipDefaultLibCheck": true, /* Skip type checking .d.ts files that are included with TypeScript. */
     "esModuleInterop": true, /* Enable compatibility between ES modules and CommonJS. */
+    "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
     "declaration": true,
