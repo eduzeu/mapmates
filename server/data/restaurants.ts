@@ -133,7 +133,7 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
 
     name = validateString(name);
     type = validateString(type);
-    visitDate = validateDate(visitDate);
+    // visitDate = validateDate(visitDate);
     id = validateObjectId(id);
 
     // const coordinates = await getCoordinates();

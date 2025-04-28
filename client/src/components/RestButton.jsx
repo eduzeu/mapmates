@@ -1,19 +1,26 @@
 import React from "react";
 import styled from "styled-components";
 
-function RestButton({ text }) {
-  return <Button>{text}</Button>;
+export function RestButton({ text, onClick }) {
+  return (
+    <Button onClick={() => {
+      console.log('Button clicked');
+      onClick();
+    }}>
+      {text}
+    </Button>
+  );
 }
 
 // Create a horizontal container for the buttons
-const ButtonContainer = styled.div`
+export const ButtonContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: 16px; // Adds space between buttons
   align-items: center;
 `;
 
-const Button = styled.button`
+export const Button = styled.button`
   margin-top: 15px;
   border-radius: 10px;
   padding: 12px 20px;
@@ -41,4 +48,3 @@ const Button = styled.button`
   }
 `;
 
- export { RestButton, ButtonContainer };

@@ -50,7 +50,7 @@ router.route("/add")
       const id: string = req.body.id;
       validateString(name, "Restaurant Name");
       validateString(type, "Restaurant Type");
-      validateDate(visitDate, "Visit Date");
+      // validateDate(visitDate, "Visit Date");
       // validateObjectId(id, "User Id");
       const findRests = await addRestaurant(name, type, visitDate, id);
 
