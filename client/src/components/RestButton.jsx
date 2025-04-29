@@ -12,7 +12,7 @@ export function RestButton({ text, onClick }) {
   );
 }
 
-// Create a horizontal container for the buttons
+
 export const ButtonContainer = styled.div`
   display: flex;
   flex-direction: row;

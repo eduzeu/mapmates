@@ -20,6 +20,9 @@ const NavBar = () => {
           <NavLink to="/maps" onClick={toggleMenu}>Maps</NavLink>
           <NavLink to="/feed" onClick={toggleMenu}>Feed</NavLink>
           <NavLink to="/signout" onClick={toggleMenu}>Signout</NavLink>
+          <NavLink to="/signin" onClick={toggleMenu}>Login</NavLink>
+          <NavLink to="/signup" onClick={toggleMenu}>Create Account</NavLink>
+
         </nav>
       )}
     </div>

@@ -8,6 +8,9 @@ import Home from './components/Home'
 import Login from './components/Login'
 import Logout from './components/Logout'
 import UserFeed from './components/UserFeed'
+import CreateAccount from './components/CreateAccount'
+
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
@@ -23,6 +26,8 @@ function App() {
           <Route path="/maps" element={<Map />} />
           <Route path="/feed" element={<UserFeed />} />
           <Route path="/signout" element={<Logout />} />
+          <Route path="/signin" element={<Login />} />
+          <Route path="/signup" element={<CreateAccount />} />
         </Routes>
       </div>
     </div>
