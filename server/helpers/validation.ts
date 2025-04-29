@@ -128,3 +128,23 @@ export const validateUUID = (id: any, idName?: string): string => {
 
   return id;
 };
+
+export const validateNumber = (num: any, numName?: string): number => {
+  if (typeof num === "undefined")
+    throw new ValidationError(
+      `${numName || "Provided parameter"} was not supplied.`
+    );
+
+  if (typeof num !== "number")
+    throw new ValidationError(
+      `${numName || "Provided data"
+      } is not of type 'number', but of type '${typeof num}'.`
+    );
+
+  if (isNaN(num))
+    throw new ValidationError(
+      `${numName || "Provided number"} is NaN.`
+    );
+
+  return num;
+}

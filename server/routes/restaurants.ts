@@ -1,13 +1,18 @@
 import express, { Router } from "express";
-import { getRestaurants, getRestaurantsById, searchRestaurants, addRestaurant, deleteRestaurant } from "../data/restaurants";
+import { getRestaurants, getRestaurantsById, searchRestaurants, addRestaurant, deleteRestaurant, getAddedRestaurants } from "../data/restaurants";
 import { validateObjectId, validateDateString, validateDate, validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
 const router = Router();
 
 router.route("/")
   .get(async (req: express.Request, res: express.Response) => {
     try {
-      const getRest = await getRestaurants();
-      res.status(200).json(getRest);
+      const [apiRestaurants, addedRestaurants] = await Promise.all([
+        getRestaurants(),
+        getAddedRestaurants()
+      ]);
+
+      const allRestaurants = [...apiRestaurants, ...addedRestaurants];
+      res.status(200).json(allRestaurants);
     } catch (e: unknown) {
       const error = e as Error;
       console.error(error.message);
@@ -43,16 +48,19 @@ router.route("/search")
 router.route("/add")
   .post(async (req: express.Request, res: express.Response) => {
     try {
-      const parsedVisitDate = new Date(req.body.visitDate);
+      console.log(req.body)
       const name: string = req.body.name;
       const type: string = req.body.type;
-      const visitDate: Date = parsedVisitDate;
+      const visitDate: Date = req.body.visitedAt;
       const id: string = req.body.id;
+      const lat: number = req.body.coordinates.lat;
+      const lon: number = req.body.coordinates.long;
       validateString(name, "Restaurant Name");
       validateString(type, "Restaurant Type");
       // validateDate(visitDate, "Visit Date");
       // validateObjectId(id, "User Id");
-      const findRests = await addRestaurant(name, type, visitDate, id);
+
+      const findRests = await addRestaurant(name, type, visitDate, id, lat, lon);
 
       res.status(200).json(findRests);
     } catch (e: unknown) {

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import userIconImg from '../assets/user.png'; 
-import visited from '../assets/visited.png'; 
-import notVisited from '../assets/notVisited.png'; 
+import userIconImg from '../assets/user.png';
+import visited from '../assets/visited.png';
+import notVisited from '../assets/notVisited.png';
 import { RestButton, ButtonContainer } from "./RestButton";
 
 const hobokenBounds = [
-  [40.7684, -74.0401], 
+  [40.7684, -74.0401],
   [40.7311, -74.0122]
 ];
 
@@ -17,6 +17,15 @@ const createCustomIcon = (iconUrl) => {
     iconUrl: iconUrl,
     iconSize: [40, 40],
     iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+  });
+};
+
+const createCustomIcon1 = (iconUrl) => {
+  return L.icon({
+    iconUrl: iconUrl,
+    iconSize: [28, 28],
+    iconAnchor: [10, 30],
     popupAnchor: [0, -40]
   });
 };
@@ -87,8 +96,8 @@ function Map() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data.features);
-      setRestaurants(data.features);
+      console.log(data);
+      setRestaurants(data);
     } catch (err) {
       console.error("Error fetching restaurants:", err);
     }
@@ -171,29 +180,67 @@ function Map() {
           <MapBoundary />
           <LocationMarker onLocationFound={setUserLocation} />
 
-          {restaurants.length > 0 && restaurants.map((restaurant, index) => {
-            const [lon, lat] = restaurant.geometry.coordinates;
-            return (
-              <Marker
-                key={index}
-                position={[lat, lon]}
-                icon={createCustomIcon(notVisited)}
-              >
-                <Popup>
-                  <div>
-                    <h3>{restaurant.properties.name}</h3>
-                    <p>{restaurant.properties.formatted}</p>
-                    {restaurant.properties.contact?.phone && (
-                      <p>Phone: {restaurant.properties.contact.phone}</p>
-                    )}
-                    {restaurant.properties.website && (
-                      <p><a href={restaurant.properties.website} target="_blank" rel="noopener noreferrer">Website</a></p>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
+          {restaurants
+            .filter(restaurant => restaurant.type === 'Feature' && restaurant.geometry?.coordinates)
+            .map((restaurant, index) => {
+              const [lon, lat] = restaurant.geometry.coordinates;
+              return (
+                <Marker
+                  key={index}
+                  position={[lat, lon]}
+                  icon={createCustomIcon(notVisited)}
+                >
+                  <Popup>
+                    <div>
+                      <h3>{restaurant.properties.name}</h3>
+                      <p>{restaurant.properties.formatted}</p>
+                      {restaurant.properties.contact?.phone && (
+                        <p>Phone: {restaurant.properties.contact.phone}</p>
+                      )}
+                      {restaurant.properties.website && (
+                        <p><a href={restaurant.properties.website} target="_blank" rel="noopener noreferrer">Website</a></p>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+
+          {restaurants
+            .filter(user => Array.isArray(user.visitedPlaces))
+            .flatMap((user, userIndex) =>
+              user.visitedPlaces
+                .filter(place => {
+                  const coords = place.coordinates || {};
+                  const lat = coords.lat ?? coords.latitude;
+                  const lng = coords.long ?? coords.longitude;
+                  return typeof lat === 'number' && typeof lng === 'number';
+                })
+                .map((place, placeIndex) => {
+                  const coords = place.coordinates || {};
+                  const lat = coords.lat ?? coords.latitude;
+                  const lng = coords.long ?? coords.longitude;
+
+                  return (
+                    <Marker
+                      key={`mongo-${userIndex}-${placeIndex}`}
+                      position={[lat, lng]}
+                      icon={createCustomIcon(visited)}
+                    >
+                      <Popup>
+                        <div>
+                          <h3>{place.place}</h3>
+                          <p>Type: {place.cuisine}</p>
+                          <p>Visited: {new Date(place.visitedAt).toLocaleDateString()}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })
+            )}
+
+
+
         </MapContainer>
 
         <div>
@@ -226,23 +273,23 @@ function Map() {
                   onChange={handleFormChange}
                   required
                 />
-                </div>
-                <div>
+              </div>
+              <div>
                 <label>user id: </label>
-                 <input
+                <input
                   type="text"
                   name="id"
                   value={formData.id}
                   onChange={handleFormChange}
                   required
                 />
-                </div>
+              </div>
               <button type="submit" style={{ marginTop: '10px' }}>Submit</button>
             </form>
           </div>
         )}
 
-       
+
       </div>
     </>
   );

@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { users as usersCollection } from "../config/mongoCollections";
-import { validateDate, validateObjectId, validateString } from "../helpers/validation";
+import { validateDate, validateObjectId, validateString, validateNumber } from "../helpers/validation";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -100,7 +100,22 @@ export const getCoordinates = (): Promise<Coordinates> => {
 export const getRestaurants = async () => {
   try {
     const response = await axios.get(`https://api.geoapify.com/v2/places?categories=catering.restaurant&filter=circle:-74.028,40.743,1000&limit=20&apiKey=${apiKey}`);
-    return response.data;
+    return response.data.features;
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error(error.message);
+  }
+}
+
+export const getAddedRestaurants = async () => {
+  try {
+    const users = await usersCollection();
+    const newRestaurants = await users.find({
+      visitedPlaces: { $exists: true, $ne: [] }
+    });
+    const restaurants = await newRestaurants.toArray();
+    return restaurants;
+
   } catch (e: unknown) {
     const error = e as Error;
     console.error(error.message);
@@ -128,14 +143,16 @@ export const getRestaurantsById = async (id: string) => {
     return null;
   }
 }
-export const addRestaurant = async (name: string, type: string, visitDate: Date, id: string) => {
+export const addRestaurant = async (name: string, type: string, visitDate: Date, id: string, lat: number, lon: number) => {
   try {
+    console.log(name, type, visitDate, id, lat, lon);
 
     name = validateString(name);
     type = validateString(type);
     // visitDate = validateDate(visitDate);
     id = validateObjectId(id);
-
+    lat = validateNumber(lat);
+    lon = validateNumber(lon);
     // const coordinates = await getCoordinates();
     //now insert into mongo
     const users = await usersCollection();
@@ -144,7 +161,7 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
       place: name,
       cuisine: type,
       visitedAt: visitDate,
-      coordinates: null
+      coordinates: { latitude: lat, longitude: lon },
 
     }
 
@@ -157,7 +174,7 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
 
   } catch (e: unknown) {
     const error = e as Error;
-    console.error("error adding resgtaurant: ", error.message);
+    console.error("error adding restaurant: ", error.message);
     return null;
   }
 }
