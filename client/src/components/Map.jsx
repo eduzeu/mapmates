@@ -225,7 +225,7 @@ function Map() {
                     <Marker
                       key={`mongo-${userIndex}-${placeIndex}`}
                       position={[lat, lng]}
-                      icon={createCustomIcon(visited)}
+                      icon={createCustomIcon1(visited)}
                     >
                       <Popup>
                         <div>
