@@ -118,6 +118,7 @@ function Map() {
       setFormData({ name: "", type: "" });
       setShowForm(false);
       fetchRestaurants();
+
     } catch (e) {
       console.error("Error adding restaurant:", e.message);
     }

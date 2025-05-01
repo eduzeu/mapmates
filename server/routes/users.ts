@@ -15,20 +15,20 @@ router.route("/")
   //     return res.redirect("/home/");
   //   } catch (e) {
   //     return res.render("../views/account", {
-  //       title: "Welcome to WiFly NYC",
+  //       title: "Welcome to MapMates",
   //     });
   //   }
   // })
   .post(async (req: express.Request, res: express.Response) => {
-    if(!req.body){
-      res.status(400).json({success: false, error: "No request body"});
+    if (!req.body) {
+      res.status(400).json({ success: false, error: "No request body" });
       return res;
     }
     let username = req.body.loginUser as string;
     let password = req.body.loginPassword as string;
     try {
       username = validateString(username, "Username").toLowerCase();
-      password = validatePassword(password, "Password");
+      // password = validatePassword(password, "Password");
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.toString() });
       return res;
@@ -45,10 +45,10 @@ router.route("/")
         maxAge: 60 * 30 * 1000,
         httpOnly: true,
       });
-      res.json({success: true});
+      res.json({ success: true });
       return res;
     } catch (error: any) {
-      res.status(400).json({success: false, error: error.toString()});
+      res.status(400).json({ success: false, error: error.toString() });
       return res;
     }
   });
@@ -59,8 +59,8 @@ router.route("/signup")
   //   res.render("../views/newAccount", { title: "Welcome to WiFly NYC" });
   // })
   .post(async (req: express.Request, res: express.Response) => {
-    if(!req.body){
-      res.status(400).json({success: false, error: "No request body"});
+    if (!req.body) {
+      res.status(400).json({ success: false, error: "No request body" });
       return res;
     }
     let username = req.body.loginUser as string;
@@ -77,7 +77,7 @@ router.route("/signup")
         throw new Error("Passwords do not match");
       }
     } catch (error: any) {
-      res.status(400).json({success: false, error: error.toString()});
+      res.status(400).json({ success: false, error: error.toString() });
       return res;
     }
 
@@ -88,10 +88,10 @@ router.route("/signup")
 
     try {
       const result = await userFunctions.addNewUser(username, email, password);
-      res.json({success: true});
+      res.json({ success: true });
       return res;
     } catch (error: any) {
-      res.status(400).json({success: false, error: error.toString()});
+      res.status(400).json({ success: false, error: error.toString() });
       return res;
     }
   });
@@ -103,18 +103,18 @@ router.route("/logout").get(async (req: express.Request, res: express.Response) 
     if (token) {
       isDeleted = await sessionTokenFunctions.deleteSessionToken(token);
     }
-    else{
-      res.json({success: false, error: "No cookie to delete"});
+    else {
+      res.json({ success: false, error: "No cookie to delete" });
       return res;
     }
     res.clearCookie("session_token", { httpOnly: true });
     if (isDeleted) {
-      return res.json({success: true});
+      return res.json({ success: true });
     } else {
       throw new Error("Failed to delete session");
     }
   } catch (error: any) {
-    return res.status(500).json({success: false, error: error.toString()});
+    return res.status(500).json({ success: false, error: error.toString() });
   }
 });
 

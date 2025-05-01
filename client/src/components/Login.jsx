@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import '../App.css'; 
-import Logo from '../assets/logo.png'; 
+import '../App.css';
+import Logo from '../assets/logo.png';
 
 function Login() {
   const [formData, setFormData] = useState({
-    username: "",
-    password: ""
+    loginUser: "",
+    loginPassword: ""
   });
 
   const handleChange = (e) => {
@@ -16,10 +16,17 @@ function Login() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Logging in with:", formData);
-    // Add login logic here
+    const response = await fetch('http://localhost:3000/users/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+    setFormData({ loginUser: "", loginPassword: "" });
+    console.log("Logging in with:", response);
   };
 
   return (
@@ -33,8 +40,8 @@ function Login() {
           <label>Username</label>
           <input
             type="text"
-            name="username"
-            value={formData.username}
+            name="loginUser"
+            value={formData.loginUser}
             onChange={handleChange}
             required
           />
@@ -43,14 +50,14 @@ function Login() {
           <label>Password</label>
           <input
             type="password"
-            name="password"
-            value={formData.password}
+            name="loginPassword"
+            value={formData.loginPassword}
             onChange={handleChange}
             required
           />
         </div>
-        <div className="login_button"> 
-            <button type="submit">Login</button>
+        <div className="login_button">
+          <button type="submit">Login</button>
         </div>
       </form>
     </div>

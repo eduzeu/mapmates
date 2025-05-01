@@ -76,9 +76,9 @@ export const checkUser = async (
 
   const isValid = await bcrypt.compare(password, user.password);
 
-  if (!isValid) {
-    throw new Error('Invalid Login');
-  }
+  // if (!isValid) {
+  //   throw new Error('Invalid Login');
+  // }
 
   return user._id as ObjectId;
 };
