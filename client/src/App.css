@@ -108,17 +108,26 @@
 }
 
 
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
 .login-container {
-  max-width: 800px;
-  padding: 5rem;
+  padding: 6rem;
+  width: 300px;
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: #90BEDE;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .login_button {
   text-align: center;
   margin: 1rem auto 0;
+  width: 100px;
 }
 
 .login-container h2 {
