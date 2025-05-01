@@ -104,17 +104,43 @@ router.route("/logout").get(async (req: express.Request, res: express.Response) 
       isDeleted = await sessionTokenFunctions.deleteSessionToken(token);
     }
     else {
-      res.json({ success: false, error: "No cookie to delete" });
+      res.status(400).json({ success: false, error: "No cookie to delete" });
       return res;
     }
     res.clearCookie("session_token", { httpOnly: true });
     if (isDeleted) {
-      return res.json({ success: true });
+      res.json({ success: true });
+      return res;
     } else {
       throw new Error("Failed to delete session");
     }
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.toString() });
+    res.status(500).json({ success: false, error: error.toString() });
+    return res;
+  }
+});
+
+router.route("/getuser").get(async (req: express.Request, res: express.Response) => {
+  try {
+    const token = req.cookies["session_token"] as string | undefined;
+    let foundUser;
+    if (token) {
+      foundUser = await sessionTokenFunctions.findUserFromSessionToken(token);
+    }
+    else {
+      res.status(400).json({ error: "Failed to find user" });
+      return res;
+    }
+    res.clearCookie("session_token", { httpOnly: true });
+    if (foundUser) {
+      res.json({ user: foundUser });
+      return res;
+    } else {
+      throw new Error("Failed to find user");
+    }
+  } catch (error: any) {
+    res.status(400).json({ error: error.toString() });
+    return res;
   }
 });
 
