@@ -8,21 +8,10 @@ const router = Router();
 
 router.route("/")
   // GET /signin route to check session token
-  // .get(async (req: express.Request, res: express.Response) => {
-  //   try {
-  //     let token = req.cookies["session_token"] as string | undefined;
-  //     await sessionTokenFunctions.sessionChecker(token as string);
-  //     return res.redirect("/home/");
-  //   } catch (e) {
-  //     return res.render("../views/account", {
-  //       title: "Welcome to MapMates",
-  //     });
-  //   }
-  // })
   .post(async (req: express.Request, res: express.Response) => {
     if (!req.body) {
       res.status(400).json({ success: false, error: "No request body" });
-      return res;
+      return;
     }
     let username = req.body.loginUser as string;
     let password = req.body.loginPassword as string;
@@ -31,7 +20,7 @@ router.route("/")
       // password = validatePassword(password, "Password");
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.toString() });
-      return res;
+      return;
     }
     username = xss(username);
     password = xss(password);
@@ -46,10 +35,10 @@ router.route("/")
         httpOnly: true,
       });
       res.json({ success: true });
-      return res;
+      return;
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.toString() });
-      return res;
+      return;
     }
   });
 
@@ -61,7 +50,7 @@ router.route("/signup")
   .post(async (req: express.Request, res: express.Response) => {
     if (!req.body) {
       res.status(400).json({ success: false, error: "No request body" });
-      return res;
+      return;
     }
     let username = req.body.loginUser as string;
     let email = req.body.loginEmail as string;
@@ -78,7 +67,7 @@ router.route("/signup")
       }
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.toString() });
-      return res;
+      return;
     }
 
     username = xss(username);
@@ -89,10 +78,10 @@ router.route("/signup")
     try {
       const result = await userFunctions.addNewUser(username, email, password);
       res.json({ success: true });
-      return res;
+      return;
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.toString() });
-      return res;
+      return;
     }
   });
 
@@ -105,18 +94,18 @@ router.route("/logout").get(async (req: express.Request, res: express.Response) 
     }
     else {
       res.status(400).json({ success: false, error: "No cookie to delete" });
-      return res;
+      return;
     }
     res.clearCookie("session_token", { httpOnly: true });
     if (isDeleted) {
       res.json({ success: true });
-      return res;
+      return;
     } else {
       throw new Error("Failed to delete session");
     }
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.toString() });
-    return res;
+    return;
   }
 });
 
@@ -132,18 +121,18 @@ router.route("/getuser").get(async (req: express.Request, res: express.Response)
     }
     else {
       res.status(400).json({ error: "Failed to find user" });
-      return res;
+      return;
     }
     res.clearCookie("session_token", { httpOnly: true });
     if (foundUser) {
       res.json({ user: foundUser });
-      return res;
+      return;
     } else {
       throw new Error("Failed to find user");
     }
   } catch (error: any) {
     res.status(400).json({ error: error.toString() });
-    return res;
+    return;
   }
 });
 
