@@ -112,7 +112,9 @@ router.route("/logout").get(async (req: express.Request, res: express.Response) 
 router.route("/getuser").get(async (req: express.Request, res: express.Response) => {
   try {
     if(!req.cookies){
+      console.log("not logged in");
       res.status(400).json({error: "Not logged in"});
+      return;
     }
     const token = req.cookies["session_token"] as string | undefined;
     let foundUser;

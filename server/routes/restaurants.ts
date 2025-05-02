@@ -10,7 +10,6 @@ router.route("/")
         getRestaurants(),
         getAddedRestaurants()
       ]);
-
       const allRestaurants = [...apiRestaurants, ...addedRestaurants];
       res.status(200).json(allRestaurants);
     } catch (e: unknown) {

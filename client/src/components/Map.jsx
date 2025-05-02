@@ -87,6 +87,7 @@ function Map() {
 
   useEffect(() => {
     fetchRestaurants();
+    fetchUser();
   }, []);
 
   const fetchRestaurants = async () => {
@@ -100,6 +101,22 @@ function Map() {
       setRestaurants(data);
     } catch (err) {
       console.error("Error fetching restaurants:", err);
+    }
+  };
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/users/getuser', {
+        method: 'GET',
+        credentials: "include"
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log(data);
+    } catch (err) {
+      console.error("Error fetching user:", err);
     }
   };
 

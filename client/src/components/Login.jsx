@@ -26,13 +26,13 @@ function Login() {
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: "include",
       body: JSON.stringify(formData)
     });
     setFormData({ loginUser: "", loginPassword: "" });
     alert("Login Successful!");
     navigate("/");
     console.log("Logging in with:", response);
-
   };
 
   return (
