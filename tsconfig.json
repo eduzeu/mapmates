@@ -22,13 +22,14 @@
     "allowJs": true, /* Allow JavaScript files to be part of your program. */
     /* Output and Source Maps */
     "sourceMap": true, /* Create source map files for emitted JavaScript files. */
-    "outDir": ".build", /* Specify an output folder for all emitted files. */
+    "outDir": ".build/", /* Specify an output folder for all emitted files. */
     /* Others */
     "skipDefaultLibCheck": true, /* Skip type checking .d.ts files that are included with TypeScript. */
     "esModuleInterop": true, /* Enable compatibility between ES modules and CommonJS. */
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
-    "declaration": true,
-  }
+    "declaration": true
+  },
+  "exclude": ["client/dist"]
 }

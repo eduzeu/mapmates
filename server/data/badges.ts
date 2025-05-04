@@ -1,6 +1,6 @@
 import { Collection, ObjectId } from 'mongodb';
 import { users } from '../config/mongoCollections.js';
-import { validateEmailAddress, validatePassword, validateString } from '../helpers/validation';
+import { validateString } from '../helpers/validation';
 import { User } from './users';
 
 export const earnFriendBadge = async (id: string) => {

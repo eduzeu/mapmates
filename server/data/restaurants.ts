@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { users as usersCollection } from "../config/mongoCollections";
-import { validateDate, validateObjectId, validateString, validateNumber } from "../helpers/validation";
+import { validateNumber, validateObjectId, validateString } from "../helpers/validation";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

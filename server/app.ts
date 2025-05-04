@@ -1,8 +1,8 @@
-import express from "express";
-import configRoutes from "./routes/index.ts";
-import session from "express-session";
-import cors from "cors";
 import cookieParser from 'cookie-parser';
+import cors from "cors";
+import express from "express";
+import session from "express-session";
+import configRoutes from "./routes/index.ts";
 
 const app = express();
 

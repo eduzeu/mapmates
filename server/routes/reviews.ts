@@ -1,14 +1,13 @@
 import express, { Router } from "express";
-import { handleErrors } from "../helpers/errors";
-import { validateDateString, validateString } from "../helpers/validation";
+import xss from "xss";
 import {
   deleteReview,
   getReviewById,
   reviewsByRestaurant,
-  reviewsByUser,
   updateReview,
 } from "../data/review.ts";
-import xss from "xss";
+import { handleErrors } from "../helpers/errors";
+import { validateDateString, validateString } from "../helpers/validation";
 
 const router = Router();
 

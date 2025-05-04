@@ -1,10 +1,10 @@
 import express, { Router } from "express";
-import { getRestaurants, getRestaurantsById, searchRestaurants, addRestaurant, deleteRestaurant, getAddedRestaurants } from "../data/restaurants";
-import { validateObjectId, validateDateString, validateDate, validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
+import { addRestaurant, deleteRestaurant, getAddedRestaurants, getRestaurants, getRestaurantsById, searchRestaurants } from "../data/restaurants";
+import { validateObjectId, validateString } from "../helpers/validation";
 const router = Router();
 
 router.route("/")
-  .get(async (req: express.Request, res: express.Response) => {
+  .get(async (_: express.Request, res: express.Response) => {
     try {
       const [apiRestaurants, addedRestaurants] = await Promise.all([
         getRestaurants(),

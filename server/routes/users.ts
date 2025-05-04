@@ -76,7 +76,7 @@ router.route("/signup")
     confirmPassword = xss(confirmPassword);
 
     try {
-      const result = await userFunctions.addNewUser(username, email, password);
+      await userFunctions.addNewUser(username, email, password);
       res.json({ success: true });
       return;
     } catch (error: any) {
