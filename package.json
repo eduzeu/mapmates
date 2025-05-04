@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "server": "tsx server/app.ts",
+    "server-build": "tsc",
     "client-build": "vite build client/",
     "client-dev": "vite client/",
     "client-lint": "eslint client/",
