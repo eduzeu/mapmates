@@ -1,7 +1,16 @@
 # Map Mates
 
-## Setup
+## Run
 
-In order to set up the project you need to install three sets of dependencies.
+First you need to install dependencies with `npm i`. This isntalls for both client and server.
 
-In the root, in `./client/`, and in `./server`.
+### Running the Server
+
+1. Start a MongoDB Database
+2. Start a Redis Server
+3. Run `npm run server`
+
+### Running the Client
+
+1. Run `npm run client-build`
+2. Run `npm run client-preview`
