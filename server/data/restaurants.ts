@@ -220,6 +220,37 @@ export const deleteRestaurant = async (id: string, name: string) => {
 };
 
 
+export const searchRestaurantsByType = async (type: string) => {
+  try {
+    type = validateString(type);
+
+    const response = await axios.get<{ features: Feature[] }>(
+      `https://api.geoapify.com/v2/places?categories=catering.restaurant&filter=circle:-74.028,40.743,1000&limit=20&apiKey=${apiKey}`
+    );
+
+    const data = response.data;
+    let matches: any[] = [];
+
+    // filter from Geoapify API based on cuisine
+    data.features.forEach((res: Feature) => {
+      const cuisineFromProperties = res.properties.datasource.raw?.cuisine?.toLowerCase();
+      if (cuisineFromProperties && cuisineFromProperties === type.toLowerCase()) {
+        matches.push({
+          ...res,
+          source: "api"
+        });
+      }
+    });
+
+    return matches;
+
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error(error.message);
+    return null;
+  }
+}
+
 export const searchRestaurants = async (type: string) => {
   try {
     type = validateString(type);
@@ -234,7 +265,6 @@ export const searchRestaurants = async (type: string) => {
     // filter from Geoapify API based on cuisine
     data.features.forEach((res: Feature) => {
       const cuisineFromProperties = res.properties.datasource.raw?.cuisine?.toLowerCase();
-      console.log(cuisineFromProperties); // Optional: debug cuisine types
       if (cuisineFromProperties && cuisineFromProperties === type.toLowerCase()) {
         matches.push({
           ...res,

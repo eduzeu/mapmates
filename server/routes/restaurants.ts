@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { getRestaurants, getRestaurantsById, searchRestaurants, addRestaurant, deleteRestaurant, getAddedRestaurants } from "../data/restaurants";
+import { getRestaurants, getRestaurantsById, searchRestaurants, searchRestaurantsByType, addRestaurant, deleteRestaurant, getAddedRestaurants } from "../data/restaurants";
 import { validateObjectId, validateDateString, validateDate, validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
 const router = Router();
 
@@ -36,7 +36,7 @@ router.route("/search")
     try {
       const type: string = req.body.type;
       validateString(type, "Restaurant Type");
-      const findRests = await searchRestaurants(type);
+      const findRests = await searchRestaurantsByType(type);
       res.status(200).json(findRests);
     } catch (e: unknown) {
       const error = e as Error;
