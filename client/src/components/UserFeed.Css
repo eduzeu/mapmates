@@ -1,0 +1,212 @@
+.feed-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .feed-container h2 {
+    color: #EDA2C0;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 2em;
+    text-shadow: 0 0 10px rgba(237, 162, 192, 0.3);
+    letter-spacing: 1px;
+  }
+  
+  .feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .feed-item {
+    background-color: rgba(15, 23, 42, 0.85);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(237, 162, 192, 0.15);
+    border-left: 3px solid #EDA2C0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  
+  .feed-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(237, 162, 192, 0.2);
+  }
+  
+  .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    border: 2px solid #EDA2C0;
+    object-fit: cover;
+  }
+  
+  .post-meta {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-name {
+    font-weight: bold;
+    color: #e87daa;
+    font-size: 1.1em;
+  }
+  
+  .post-time {
+    color: #94a3b8;
+    font-size: 0.9em;
+  }
+  
+  .post-location {
+    margin-bottom: 15px;
+    font-weight: bold;
+  }
+  
+  .post-location a {
+    color: #EDA2C0;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+  }
+  
+  .post-location a:hover {
+    color: #e87daa;
+    text-decoration: underline;
+  }
+  
+  .location-pin {
+    margin-right: 5px;
+    font-size: 1.2em;
+  }
+  
+  .post-content {
+    margin-bottom: 15px;
+    line-height: 1.5;
+  }
+  
+  .post-images {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .post-images img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+  }
+  
+  .post-images img:hover {
+    transform: scale(1.02);
+  }
+  
+  .post-actions {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .post-actions button {
+    background-color: rgba(237, 162, 192, 0.2);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  
+  .post-actions button:hover {
+    background-color: rgba(237, 162, 192, 0.4);
+  }
+  
+  .view-on-map-link {
+    text-decoration: none;
+    flex: 1;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 20px;
+    color: #EDA2C0;
+    font-size: 1.1em;
+  }
+  
+  .loading:before {
+    content: '🗺️';
+    font-size: 24px;
+    display: block;
+    margin-bottom: 10px;
+    animation: map-pin-bounce 2s infinite;
+  }
+  
+  @keyframes map-pin-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .load-more {
+    background-color: #EDA2C0;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 20px auto;
+    display: block;
+    transition: all 0.3s ease;
+  }
+  
+  .load-more:hover {
+    background-color: #e87daa;
+    transform: translateY(-2px);
+  }
+  
+  .end-of-feed {
+    text-align: center;
+    color: #94a3b8;
+    padding: 20px;
+    font-style: italic;
+  }
+  
+  .error {
+    color: #ff4d4d;
+    padding: 20px;
+    text-align: center;
+    background-color: rgba(40, 10, 10, 0.8);
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ff4d4d;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .post-actions {
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    
+    .post-actions button {
+      flex-basis: calc(50% - 10px);
+      margin-bottom: 10px;
+    }
+  }
