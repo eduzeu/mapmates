@@ -3,6 +3,7 @@ import reviews from "./reviews.ts";
 import express from "express";
 import users from "./users.ts";
 import badges from "./badges.ts";
+import feed from "./feed.ts";  // Import the feed router
 
 
 const constructorMethod = (app: express.Express) => {
@@ -17,6 +18,9 @@ const constructorMethod = (app: express.Express) => {
 
   console.log("Registering /badges route");
   app.use("/badges", badges);
+
+  console.log("Registering /feed route");
+  app.use("/feed", feed);  // Register the feed route
 
   console.log("Registering catch-all route");
   app.use((_: express.Request, res: express.Response) => {

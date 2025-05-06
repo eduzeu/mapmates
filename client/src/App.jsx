@@ -9,6 +9,7 @@ import Login from './components/Login'
 import Logout from './components/Logout'
 import UserFeed from './components/UserFeed'
 import CreateAccount from './components/CreateAccount'
+import LocationDetail from './components/LocationDetail'
 
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -18,20 +19,20 @@ function App() {
 
   return (
     <Router>
-    <div className="App">
-      <NavBar />
-      <div className="content">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/maps" element={<Map />} />
-          <Route path="/feed" element={<UserFeed />} />
-          <Route path="/signout" element={<Logout />} />
-          <Route path="/signin" element={<Login />} />
-          <Route path="/signup" element={<CreateAccount />} />
-        </Routes>
+      <div className="App">
+        <NavBar />
+        <div className="content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/maps" element={<Map />} />
+            <Route path="/feed" element={<LocationDetail />} />
+            <Route path="/signout" element={<Logout />} />
+            <Route path="/signin" element={<Login />} />
+            <Route path="/signup" element={<CreateAccount />} />
+          </Routes>
+        </div>
       </div>
-    </div>
-  </Router>
+    </Router>
   )
 }
 

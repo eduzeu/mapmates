@@ -84,6 +84,7 @@ function Map() {
     type: "",
     id: ""
   });
+  const [showSearchForm, setShowSearchForm] = useState(false);
 
   useEffect(() => {
     fetchRestaurants();
@@ -148,6 +149,33 @@ function Map() {
     }));
   };
 
+  const handleSearchRestaurantSubmit = async (e) => {
+    e.preventDefault();
+    const selectedCuisine = e.target.cuisine.value;
+
+    try {
+      const response = await fetch(`http://localhost:3000/restaurants/search/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: selectedCuisine })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Search results:", data);
+      setRestaurants(data);
+      setShowSearchForm(false);
+
+    } catch (err) {
+      console.error("Error searching restaurants:", err);
+    }
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -172,7 +200,13 @@ function Map() {
 
   const handleAddRestaurantClick = () => {
     setShowForm(true);
+    setShowSearchForm(false);
   };
+
+  const handleSearchRestaurant = () => {
+    setShowSearchForm(true);
+    setShowForm(false);
+  }
 
   const hobokenCenter = [40.7440, -74.0254];
 
@@ -181,6 +215,93 @@ function Map() {
       <div>
         <h1>Welcome to your Map:</h1>
       </div>
+
+
+      <div className="button-container" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <ButtonContainer>
+          <RestButton text="Add Restaurant" onClick={handleAddRestaurantClick} />
+          <RestButton text="Delete Visited Restaurant" />
+          <RestButton text="Filter Restaurants" onClick={handleSearchRestaurant} />
+
+        </ButtonContainer>
+      </div>
+
+      <div style={{ alignItems: 'center', marginBottom: '20px' }}>
+
+        {showSearchForm && (
+          <div style={{ marginTop: '20px', padding: '10px', border: '1px solid black', borderRadius: '5px' }}>
+            <h3>Search Restaurant</h3>
+            <form onSubmit={handleSearchRestaurantSubmit}>
+              <div>
+                <label htmlFor="cuisine">Cuisine:</label>
+                <select id="cuisine" name="cuisine">
+                  <option value="mexican">Mexican</option>
+                  <option value="indian">Indian</option>
+                  <option value="chinese">Chinese</option>
+                  <option value="italian">Italian</option>
+                  <option value="cuban">Cuban</option>
+                  <option value="vietnamese">Vietnamese</option>
+                </select>
+              </div>
+              <button type="submit" style={{ marginTop: '10px' }}>Search</button>
+              <button
+                type="button"
+                style={{ marginLeft: '10px' }}
+                onClick={() => setShowSearchForm(false)}
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        )}
+
+        {showForm && (
+          <div style={{ marginTop: '20px', padding: '10px', border: '1px solid black', borderRadius: '5px' }}>
+            <h3>Add New Restaurant</h3>
+            <form onSubmit={handleFormSubmit}>
+              <div>
+                <label>Restaurant Name: </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Restaurant Type: </label>
+                <input
+                  type="text"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>user id: </label>
+                <input
+                  type="text"
+                  name="id"
+                  value={formData.id}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+              <button type="submit" style={{ marginTop: '10px' }}>Submit</button>
+              <button
+                type="button"
+                style={{ marginLeft: '10px' }}
+                onClick={() => setShowForm(false)}
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
 
       <div style={{ height: '500px', width: '100%' }}>
         <MapContainer
@@ -218,6 +339,7 @@ function Map() {
                       {restaurant.properties.website && (
                         <p><a href={restaurant.properties.website} target="_blank" rel="noopener noreferrer">Website</a></p>
                       )}
+                      <p> Already visited this place? make it blue! </p>
                     </div>
                   </Popup>
                 </Marker>
@@ -261,51 +383,6 @@ function Map() {
 
         </MapContainer>
 
-        <div>
-          <ButtonContainer>
-            <RestButton text="Add Restaurant" onClick={handleAddRestaurantClick} />
-            <RestButton text="Delete Restaurant" />
-          </ButtonContainer>
-        </div>
-
-        {showForm && (
-          <div style={{ marginTop: '20px', padding: '10px', border: '1px solid black', borderRadius: '5px' }}>
-            <h3>Add New Restaurant</h3>
-            <form onSubmit={handleFormSubmit}>
-              <div>
-                <label>Restaurant Name: </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-              <div>
-                <label>Restaurant Type: </label>
-                <input
-                  type="text"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-              <div>
-                <label>user id: </label>
-                <input
-                  type="text"
-                  name="id"
-                  value={formData.id}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-              <button type="submit" style={{ marginTop: '10px' }}>Submit</button>
-            </form>
-          </div>
-        )}
 
 
       </div>
