@@ -133,9 +133,8 @@ export const reviewsByRestaurant = async (
 export const reviewsByUser = async (userId: string): Promise<Review[]> => {
   userId = validateObjectId(userId, "User Id");
 
-  // TODO: Update once user db is implemented
-  // let exists = await restaurantExists(userId);
-  // if (!exists) throw new NotFoundError("No user found with that id.");
+  let exists = await restaurantExists(userId);
+  if (!exists) throw new NotFoundError("No user found with that id.");
 
   const collection = await reviews();
   const reviewList = await collection.find({ placeId: new ObjectId(userId) });

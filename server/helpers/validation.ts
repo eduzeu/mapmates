@@ -1,4 +1,4 @@
-import { isDate, isValid, parse } from "date-fns";
+import { isDate, isValid, parse, parseISO } from "date-fns";
 import { ObjectId } from "mongodb";
 import * as uuid from "uuid";
 import { ValidationError } from "./errors";
@@ -70,14 +70,27 @@ export const validateDateString = (date: any, dateName?: string): string => {
   return date;
 };
 
+export const validateISOString = (date: any, dateName?: string) : string => {
+  date = validateString(date, dateName);
+
+  const parsed = parseISO(date);
+  if (!isValid(parsed))
+    throw new ValidationError(
+      `${dateName || "Provided string"} is not a valid date.`
+    );
+
+  return date;
+}
+
 export const validateEmailAddress = (
   email: any,
   emailName?: string
 ): string => {
   email = validateString(email, emailName);
 
-  // regex source: https://www.geeksforgeeks.org/javascript-program-to-validate-an-email-address/
-  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  // Based on regex in https://www.npmjs.com/package/email-validator?activeTab=code (see index.js)
+  // Modified to meet spec requirements
+  const regex = /^(((\\@)?[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~]((\.?|\\@?)[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*)|(\"([-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~\s])*\"))@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
   if (!regex.test(email)) {
     throw new ValidationError(
       `${emailName || "Provided string"} is not a valid email address.`

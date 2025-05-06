@@ -1,6 +1,5 @@
 import express, { Router } from "express";
-import { handleErrors } from "../helpers/errors";
-import { validateDateString, validateString } from "../helpers/validation";
+import xss from "xss";
 import {
   deleteReview,
   getReviewById,
@@ -8,7 +7,8 @@ import {
   reviewsByUser,
   updateReview,
 } from "../data/review.ts";
-import xss from "xss";
+import { handleErrors } from "../helpers/errors.ts";
+import { validateDateString, validateString } from "../helpers/validation.ts";
 
 const router = Router();
 
@@ -101,24 +101,24 @@ router.route("/restaurant/:id").get(async (req: express.Request, res: express.Re
   }
 });
 
-// router.route("/user/:id").get(async (req: express.Request, res: express.Response) => {
-//   let id: string | undefined = req.params.id;
+router.route("/user/:id").get(async (req: express.Request, res: express.Response) => {
+  let id: string | undefined = req.params.id;
 
-//   try {
-//     id = validateString(id, "User Id");
+  try {
+    id = validateString(id, "User Id");
 
-//   } catch (e) {
-//     handleErrors(res, e, 400);
-//     return;
-//   }
+  } catch (e) {
+    handleErrors(res, e, 400);
+    return;
+  }
 
-//   try {
-//     let reviews = await reviewsByUser(id);
-//     res.status(200).json(reviews);
+  try {
+    let reviews = await reviewsByUser(id);
+    res.status(200).json(reviews);
 
-//   } catch (e) {
-//     handleErrors(res, e, 500);
-//   }
-// });
+  } catch (e) {
+    handleErrors(res, e, 500);
+  }
+});
 
 export default router;
