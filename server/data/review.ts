@@ -59,6 +59,10 @@ export const addReview = async (
   timestamp = validateDateString(timestamp, "Timestamp");
   if (image) image = validateCloudinaryUrl(image, "Image Url");
 
+  const collection = await reviews();
+  const existingReview = await collection.findOne({ userId: new ObjectId(userId), placeId: placeId });
+  if (existingReview) throw new ValidationError("User has already reviewed this place.");
+
   const newReview: Review = {
     userId: new ObjectId(userId),
     placeId: placeId,
@@ -69,7 +73,6 @@ export const addReview = async (
     comments: [],
   };
 
-  const collection = await reviews();
   const insertInfo = await collection.insertOne(newReview);
 
   if (!insertInfo.acknowledged || !insertInfo.insertedId)
