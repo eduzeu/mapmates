@@ -5,6 +5,24 @@ import { NotFoundError, ServerError, ValidationError } from '../helpers/errors.t
 import { validateObjectId, validateString } from '../helpers/validation.ts';
 import { Review } from './review.ts';
 
+// Define user type with the properties we need
+interface User {
+  _id: ObjectId;
+  username?: string;
+  avatar?: string;
+  visitedPlaces?: Array<{
+    place?: string;
+    placeId?: ObjectId;
+    coordinates?: {
+      latitude?: number;
+      longitude?: number;
+      lat?: number;
+      long?: number;
+    };
+  }>;
+  friends?: Array<ObjectId>;
+}
+
 // Enhanced review with user information for feed display
 export interface ReviewWithUserInfo extends Review {
   username: string;
@@ -59,34 +77,34 @@ export const getAllReviewsWithUserInfo = async (page: number = 1, limit: number 
     // Get all users in one query
     const userList = await userCollection
       .find({ _id: { $in: userIds.map(id => new ObjectId(id)) } })
-      .toArray();
+      .toArray() as User[];
     
     // Create a map for quick user lookup
     const userMap = new Map(userList.map(user => [user._id.toString(), user]));
     
     // Enhanced reviews with user and location info
     const enhancedReviews = await Promise.all(reviewsList.map(async (review) => {
-      const user = userMap.get(review.userId.toString());
+      const user = userMap.get(review.userId.toString()) as User | undefined;
       
       // Try to find location information from the user's visited places
       let locationName = "Unknown Location";
       let coordinates = undefined;
       let images = undefined;
       
-      if (user && user.visitedPlaces) {
+      if (user && user.visitedPlaces && Array.isArray(user.visitedPlaces)) {
         // Try to find the location in the user's visited places
         const visitedPlace = user.visitedPlaces.find(place => 
           place.placeId && place.placeId.toString() === review.placeId.toString()
         );
         
-        if (visitedPlace) {
+        if (visitedPlace && visitedPlace.place) {
           locationName = visitedPlace.place;
           
           // Extract coordinates if available
           if (visitedPlace.coordinates) {
             coordinates = {
-              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat,
-              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long
+              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat || 0,
+              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long || 0
             };
           }
           
@@ -97,8 +115,8 @@ export const getAllReviewsWithUserInfo = async (page: number = 1, limit: number 
       
       return {
         ...review,
-        username: user ? user.username : "Unknown User",
-        userAvatar: user?.avatar || `https://i.pravatar.cc/150?u=${review.userId.toString()}`,
+        username: user && user.username ? user.username : "Unknown User",
+        userAvatar: user && user.avatar ? user.avatar : `https://i.pravatar.cc/150?u=${review.userId.toString()}`,
         locationName,
         images,
         coordinates
@@ -140,7 +158,7 @@ export const getReviewsByUserWithInfo = async (userId: string, page: number = 1,
     const userCollection = await users();
     
     // Get the user
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) }) as User | null;
     
     if (!user) {
       throw new NotFoundError('User not found');
@@ -165,20 +183,20 @@ export const getReviewsByUserWithInfo = async (userId: string, page: number = 1,
       let coordinates = undefined;
       let images = undefined;
       
-      if (user.visitedPlaces) {
+      if (user.visitedPlaces && Array.isArray(user.visitedPlaces)) {
         // Try to find the location in the user's visited places
         const visitedPlace = user.visitedPlaces.find(place => 
           place.placeId && place.placeId.toString() === review.placeId.toString()
         );
         
-        if (visitedPlace) {
+        if (visitedPlace && visitedPlace.place) {
           locationName = visitedPlace.place;
           
           // Extract coordinates if available
           if (visitedPlace.coordinates) {
             coordinates = {
-              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat,
-              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long
+              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat || 0,
+              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long || 0
             };
           }
           
@@ -189,7 +207,7 @@ export const getReviewsByUserWithInfo = async (userId: string, page: number = 1,
       
       return {
         ...review,
-        username: user.username,
+        username: user.username || "Unknown User",
         userAvatar: user.avatar || `https://i.pravatar.cc/150?u=${userId}`,
         locationName,
         images,
@@ -232,14 +250,14 @@ export const getFriendsReviewsWithInfo = async (userId: string, page: number = 1
     const userCollection = await users();
     
     // Get user
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) }) as User | null;
     
     if (!user) {
       throw new NotFoundError('User not found');
     }
     
     // Get friend IDs
-    const friendIds = user.friends 
+    const friendIds = user.friends && Array.isArray(user.friends)
       ? user.friends.map(friend => new ObjectId(friend.toString())) 
       : [];
     
@@ -266,34 +284,34 @@ export const getFriendsReviewsWithInfo = async (userId: string, page: number = 1
     // Get all users in one query
     const userList = await userCollection
       .find({ _id: { $in: reviewUserIds.map(id => new ObjectId(id)) } })
-      .toArray();
+      .toArray() as User[];
     
     // Create a map for quick user lookup
     const userMap = new Map(userList.map(user => [user._id.toString(), user]));
     
     // Enhanced reviews with user and location info
     const enhancedReviews = await Promise.all(reviewsList.map(async (review) => {
-      const reviewUser = userMap.get(review.userId.toString());
+      const reviewUser = userMap.get(review.userId.toString()) as User | undefined;
       
       // Try to find location information from the user's visited places
       let locationName = "Unknown Location";
       let coordinates = undefined;
       let images = undefined;
       
-      if (reviewUser && reviewUser.visitedPlaces) {
+      if (reviewUser && reviewUser.visitedPlaces && Array.isArray(reviewUser.visitedPlaces)) {
         // Try to find the location in the user's visited places
         const visitedPlace = reviewUser.visitedPlaces.find(place => 
           place.placeId && place.placeId.toString() === review.placeId.toString()
         );
         
-        if (visitedPlace) {
+        if (visitedPlace && visitedPlace.place) {
           locationName = visitedPlace.place;
           
           // Extract coordinates if available
           if (visitedPlace.coordinates) {
             coordinates = {
-              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat,
-              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long
+              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat || 0,
+              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long || 0
             };
           }
           
@@ -304,8 +322,8 @@ export const getFriendsReviewsWithInfo = async (userId: string, page: number = 1
       
       return {
         ...review,
-        username: reviewUser ? reviewUser.username : "Unknown User",
-        userAvatar: reviewUser?.avatar || `https://i.pravatar.cc/150?u=${review.userId.toString()}`,
+        username: reviewUser && reviewUser.username ? reviewUser.username : "Unknown User",
+        userAvatar: reviewUser && reviewUser.avatar ? reviewUser.avatar : `https://i.pravatar.cc/150?u=${review.userId.toString()}`,
         locationName,
         images,
         coordinates

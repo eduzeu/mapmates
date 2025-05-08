@@ -71,8 +71,6 @@ function SimpleLocationDetail() {
         <Link to={`/maps?lat=${location.coordinates[0]}&lng=${location.coordinates[1]}`} className="view-on-map">
           <button>View on Map</button>
         </Link>
-        <button>Check In</button>
-        <button>Write Review</button>
       </div>
       
       <div className="location-navigation">

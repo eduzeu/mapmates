@@ -158,6 +158,106 @@
   transform: scale(1.02);
 }
 
+/* Comment styles */
+.post-comments {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border-top: 1px solid rgba(237, 162, 192, 0.3);
+  padding-top: 10px;
+}
+
+.comments-header h4 {
+  color: #EDA2C0;
+  margin-bottom: 10px;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+.comment-item {
+  padding: 8px 10px;
+  background-color: rgba(237, 162, 192, 0.1);
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  font-weight: bold;
+  font-size: 0.9em;
+  color: #EDA2C0;
+  margin-bottom: 3px;
+}
+
+.comment-text {
+  color: white;
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.comment-time {
+  color: #94a3b8;
+  font-size: 0.8em;
+  text-align: right;
+}
+
+/* Comment form styles */
+.comment-form {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(237, 162, 192, 0.05);
+  border-radius: 8px;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(237, 162, 192, 0.3);
+  background-color: rgba(15, 23, 42, 0.5);
+  color: white;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.comment-submit, .comment-cancel {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comment-submit {
+  background-color: #EDA2C0;
+  color: white;
+}
+
+.comment-submit:hover {
+  background-color: #e87daa;
+}
+
+.comment-submit:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.comment-cancel {
+  background-color: transparent;
+  color: #94a3b8;
+  border: 1px solid #94a3b8;
+}
+
+.comment-cancel:hover {
+  color: white;
+  border-color: white;
+}
+
 .post-actions {
   display: flex;
   gap: 10px;
@@ -178,6 +278,11 @@
 
 .action-button:hover {
   background-color: rgba(237, 162, 192, 0.4) !important;
+}
+
+/* Liked button state */
+.action-button.liked {
+  background-color: rgba(237, 162, 192, 0.6) !important;
 }
 
 .load-more-button {
