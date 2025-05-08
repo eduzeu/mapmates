@@ -6,6 +6,7 @@ import {
   ValidationError,
 } from "../helpers/errors.ts";
 import {
+  validateCloudinaryUrl,
   validateDateString,
   validateObjectId,
   validateString,
@@ -16,6 +17,7 @@ export interface Review {
   userId: ObjectId;
   placeId: ObjectId;
   text: string;
+  image: string | null;
   timestamp: string;
   comments: Comment[];
 }
@@ -47,18 +49,21 @@ export const addReview = async (
   userId: string,
   placeId: string,
   text: string,
-  timestamp: string
+  timestamp: string,
+  image?: string
 ): Promise<Review> => {
   userId = validateObjectId(userId, "User Id");
   placeId = validateObjectId(placeId, "Place Id");
   text = validateString(text, "Review Text");
   timestamp = validateDateString(timestamp, "Timestamp");
+  if (image) image = validateCloudinaryUrl(image, "Image Url");
 
   const newReview: Review = {
     userId: new ObjectId(userId),
     placeId: new ObjectId(placeId),
     text: text,
     timestamp: timestamp,
+    image: image ? image : null,
     comments: [],
   };
 

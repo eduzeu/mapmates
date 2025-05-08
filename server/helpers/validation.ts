@@ -11,13 +11,15 @@ export const validateString = (str: any, strName?: string): string => {
 
   if (!str)
     throw new ValidationError(
-      `${strName || "Provided parameter"
+      `${
+        strName || "Provided parameter"
       } is an empty string or evaluates to false.`
     );
 
   if (typeof str !== "string")
     throw new ValidationError(
-      `${strName || "Provided data"
+      `${
+        strName || "Provided data"
       } is not of type 'string', but of type '${typeof str}'.`
     );
 
@@ -50,13 +52,10 @@ export const validateDate = (date: any, dateName?: string): Date => {
     );
 
   if (!isValid(date))
-    throw new ValidationError(
-      `${dateName || "Provided date"} is not a valid.`
-    );
+    throw new ValidationError(`${dateName || "Provided date"} is not a valid.`);
 
   return date;
-
-}
+};
 
 export const validateDateString = (date: any, dateName?: string): string => {
   date = validateString(date, dateName);
@@ -70,7 +69,7 @@ export const validateDateString = (date: any, dateName?: string): string => {
   return date;
 };
 
-export const validateISOString = (date: any, dateName?: string) : string => {
+export const validateISOString = (date: any, dateName?: string): string => {
   date = validateString(date, dateName);
 
   const parsed = parseISO(date);
@@ -80,7 +79,7 @@ export const validateISOString = (date: any, dateName?: string) : string => {
     );
 
   return date;
-}
+};
 
 export const validateEmailAddress = (
   email: any,
@@ -90,7 +89,8 @@ export const validateEmailAddress = (
 
   // Based on regex in https://www.npmjs.com/package/email-validator?activeTab=code (see index.js)
   // Modified to meet spec requirements
-  const regex = /^(((\\@)?[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~]((\.?|\\@?)[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*)|(\"([-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~\s])*\"))@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+  const regex =
+    /^(((\\@)?[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~]((\.?|\\@?)[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*)|(\"([-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~\s])*\"))@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
   if (!regex.test(email)) {
     throw new ValidationError(
       `${emailName || "Provided string"} is not a valid email address.`
@@ -150,14 +150,34 @@ export const validateNumber = (num: any, numName?: string): number => {
 
   if (typeof num !== "number")
     throw new ValidationError(
-      `${numName || "Provided data"
+      `${
+        numName || "Provided data"
       } is not of type 'number', but of type '${typeof num}'.`
     );
 
   if (isNaN(num))
-    throw new ValidationError(
-      `${numName || "Provided number"} is NaN.`
-    );
+    throw new ValidationError(`${numName || "Provided number"} is NaN.`);
 
   return num;
-}
+};
+
+export const validateCloudinaryUrl = (url: any, urlName?: string) => {
+  url = validateString(url, urlName);
+
+  let path =
+    /^http:\/\/res\.cloudinary\.com\/dcvqjizwy\/image\/upload\/v[0-9]+\/[a-z0-9]+/m;
+  if (!path.test(url)) {
+    throw new ValidationError(
+      `${urlName || "Provided string"} is not a valid image url.`
+    );
+  }
+
+  let fileExt = /\.(jpg|jpeg|png|gif|webp|bmp|heic)$/im;
+  if (!fileExt.test(url)) {
+    throw new ValidationError(
+      `${urlName || "Provided string"} is not a valid image url.`
+    );
+  }
+
+  return url;
+};

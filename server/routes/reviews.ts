@@ -12,7 +12,7 @@ import {
   updateReview,
 } from "../data/review.ts";
 import { handleErrors } from "../helpers/errors.ts";
-import { validateDateString, validateString } from "../helpers/validation.ts";
+import { validateCloudinaryUrl, validateDateString, validateString } from "../helpers/validation.ts";
 
 const router = Router();
 
@@ -213,12 +213,14 @@ router
     let placeId: string | undefined = req.body.placeId;
     let text: string | undefined = req.body.text;
     let timestamp: string | undefined = req.body.timestamp;
+    let image: string | undefined = req.body.image;
 
     try {
       userId = validateString(userId, "User Id");
       placeId = validateString(placeId, "Place Id");
       text = validateString(text, "Review Text");
       timestamp = validateDateString(timestamp, "Timestamp");
+      if (image) image = validateCloudinaryUrl(image, "Image URL");
     } catch (e) {
       handleErrors(res, e, 400);
       return;
@@ -227,7 +229,7 @@ router
     text = xss(text);
 
     try {
-      let newReview = await addReview(userId, placeId, text, timestamp);
+      let newReview = await addReview(userId, placeId, text, timestamp, image);
       res.status(200).json(newReview);
     } catch (e) {
       handleErrors(res, e, 500);
