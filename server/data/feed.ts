@@ -10,7 +10,7 @@ interface FeedPost {
   userId: ObjectId;
   username: string;
   userAvatar?: string;
-  locationId: ObjectId;
+  locationId?: ObjectId;
   locationName: string;
   content: string;
   timestamp: Date;
@@ -28,7 +28,21 @@ interface FeedPagination {
   hasNextPage: boolean;
 }
 
-// Get a combined feed from both restaurant visits and reviews
+/**
+ * Helper function to generate placeholder images for posts
+ */
+const generatePlaceholderImages = (type: string, locationName: string): string[] => {
+  if (type === 'visit') {
+    return [`https://placehold.co/600x400?text=Visited+${encodeURIComponent(locationName)}`];
+  } else if (type === 'review') {
+    return [`https://placehold.co/600x400?text=Review+of+${encodeURIComponent(locationName)}`];
+  }
+  return [];
+};
+
+/**
+ * Get a combined feed from both restaurant visits and reviews
+ */
 export const getFeed = async (page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   // Validate pagination parameters
   if (page < 1) {
@@ -52,19 +66,23 @@ export const getFeed = async (page: number = 1, limit: number = 10): Promise<Fee
     usersList.forEach(user => {
       if (user.visitedPlaces && Array.isArray(user.visitedPlaces)) {
         user.visitedPlaces.forEach(place => {
+          const placeholderImages = generatePlaceholderImages('visit', place.place);
+          
           visitPosts.push({
             _id: new ObjectId(),
             type: 'visit',
             userId: user._id,
             username: user.username,
-            userAvatar: user.avatar || 'https://i.pravatar.cc/150?u=' + user._id.toString(),
-            locationId: new ObjectId(), // This would be the actual location ID in a real implementation
+            userAvatar: user.avatar || `https://i.pravatar.cc/150?u=${user._id.toString()}`,
             locationName: place.place,
             content: `Checked in at ${place.place}!`,
-            timestamp: place.visitedAt || new Date(),
-            likes: 0,
-            comments: 0,
-            coordinates: place.coordinates ? [place.coordinates.latitude, place.coordinates.longitude] : undefined
+            timestamp: new Date(place.visitedAt),
+            likes: Math.floor(Math.random() * 10), // Mock likes
+            comments: Math.floor(Math.random() * 5), // Mock comments
+            images: placeholderImages,
+            coordinates: place.coordinates ? 
+              [place.coordinates.latitude, place.coordinates.longitude] : 
+              undefined
           });
         });
       }
@@ -77,23 +95,36 @@ export const getFeed = async (page: number = 1, limit: number = 10): Promise<Fee
     const reviewPosts: FeedPost[] = await Promise.all(reviewsList.map(async (review) => {
       // Find the user who wrote the review
       const user = usersList.find(u => u._id.equals(review.userId));
+      const username = user ? user.username : "Unknown User";
       
-      // This would need to be updated to get the actual restaurant name from your database
+      // This would need to be updated to get the actual restaurant name
       let locationName = "Unknown Location";
-      // In a real implementation, you would fetch the restaurant name using the placeId
+      
+      // Try to find the location name from visited places
+      if (user && user.visitedPlaces) {
+        const matchingPlace = user.visitedPlaces.find(place => 
+          place.placeId && place.placeId.toString() === review.placeId.toString()
+        );
+        if (matchingPlace) {
+          locationName = matchingPlace.place;
+        }
+      }
+      
+      const placeholderImages = generatePlaceholderImages('review', locationName);
       
       return {
         _id: review._id,
         type: 'review',
         userId: review.userId,
-        username: user ? user.username : "Unknown User",
-        userAvatar: user?.avatar || 'https://i.pravatar.cc/150?u=' + review.userId.toString(),
+        username: username,
+        userAvatar: user?.avatar || `https://i.pravatar.cc/150?u=${review.userId.toString()}`,
         locationId: review.placeId,
         locationName: locationName,
         content: review.text,
         timestamp: new Date(review.timestamp),
-        likes: 0,
-        comments: 0
+        likes: Math.floor(Math.random() * 10), // Mock likes
+        comments: Math.floor(Math.random() * 5), // Mock comments
+        images: placeholderImages
       };
     }));
     
@@ -121,7 +152,9 @@ export const getFeed = async (page: number = 1, limit: number = 10): Promise<Fee
   }
 };
 
-// Get feed for a specific user (e.g., for a user profile)
+/**
+ * Get feed for a specific user (e.g., for a user profile)
+ */
 export const getUserFeed = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   try {
     userId = validateObjectId(userId, 'User ID');
@@ -156,7 +189,9 @@ export const getUserFeed = async (userId: string, page: number = 1, limit: numbe
   }
 };
 
-// Get feed for a friend network (user and their friends)
+/**
+ * Get feed for a friend network (user and their friends)
+ */
 export const getFriendsFeed = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   try {
     userId = validateObjectId(userId, 'User ID');

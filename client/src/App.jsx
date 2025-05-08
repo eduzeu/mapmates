@@ -9,8 +9,7 @@ import Login from './components/Login'
 import Logout from './components/Logout'
 import UserFeed from './components/UserFeed'
 import CreateAccount from './components/CreateAccount'
-import LocationDetail from './components/LocationDetail'
-
+import SimpleLocationDetail from './components/SimpleLocationDetail'
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
@@ -25,7 +24,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/maps" element={<Map />} />
-            <Route path="/feed" element={<LocationDetail />} />
+            <Route path="/feed" element={<UserFeed />} />
+            <Route path="/location/:locationName" element={<SimpleLocationDetail />} /> 
             <Route path="/signout" element={<Logout />} />
             <Route path="/signin" element={<Login />} />
             <Route path="/signup" element={<CreateAccount />} />
