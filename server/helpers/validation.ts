@@ -57,18 +57,27 @@ export const validateDate = (date: any, dateName?: string): Date => {
   return date;
 };
 
-export const validateDateString = (date: any, dateName?: string): string => {
-  date = validateString(date, dateName);
 
-  const parsed = parse(date, "yyyy-MM-dd", new Date());
-  if (!isValid(parsed))
-    throw new ValidationError(
-      `${dateName || "Provided string"} is not a valid date.`
-    );
-
-  return date;
+export const validateDateString = (dateString, paramName) => {
+  if (!dateString) {
+    throw new ValidationError(`You must provide a ${paramName}`);
+  }
+  if (typeof dateString !== "string") {
+    throw new ValidationError(`${paramName} must be a string`);
+  }
+  dateString = dateString.trim();
+  if (dateString.length === 0) {
+    throw new ValidationError(`${paramName} cannot be an empty string or just spaces`);
+  }
+  
+  // Check if the date is valid
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    throw new ValidationError(`${paramName} is not a valid date.`);
+  }
+  
+  return dateString;
 };
-
 export const validateISOString = (date: any, dateName?: string): string => {
   date = validateString(date, dateName);
 
@@ -181,3 +190,5 @@ export const validateCloudinaryUrl = (url: any, urlName?: string) => {
 
   return url;
 };
+
+

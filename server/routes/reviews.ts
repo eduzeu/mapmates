@@ -31,22 +31,33 @@ router
     let timestamp: string | undefined = req.body.timestamp;
 
     try {
+      // Log received data for debugging
+      console.log("Comment request received:", { reviewId, userId, text, timestamp });
+      
+      // Validate inputs
       reviewId = validateString(reviewId, "Review Id");
       userId = validateString(userId, "User Id");
       text = validateString(text, "Comment Text");
       timestamp = validateDateString(timestamp, "Timestamp");
-    } catch (e) {
-      handleErrors(res, e, 400);
-      return;
-    }
 
-    text = xss(text);
+      // Apply XSS protection
+      text = xss(text);
 
-    try {
+      // Add the comment
       const review = await addComment(reviewId, userId, text, timestamp);
       res.status(200).json(review);
     } catch (e) {
-      handleErrors(res, e, 500);
+      console.error("Error in comment route:", e);
+      if (e instanceof NotFoundError) {
+        res.status(404).json({ error: e.message });
+      } else if (e instanceof ValidationError) {
+        res.status(400).json({ error: e.message });
+      } else {
+        res.status(500).json({ 
+          error: "Could not add the comment. Please try again.",
+          details: e.message
+        });
+      }
     }
   })
   .patch(async (req: express.Request, res: express.Response) => {
@@ -144,6 +155,7 @@ router
     }
   });
 
+// Fixed like route with proper typing for Express
 router.route("/like/")
   .post(async (req: express.Request, res: express.Response) => {
     if (!req.body) {
@@ -155,20 +167,45 @@ router.route("/like/")
     let userId: string | undefined = req.body.userId;
 
     try {
-      reviewId = validateString(reviewId, "Review Id");
-      userId = validateString(userId, "User Id");
+      console.log('Like request received:', { reviewId, userId });
 
+      if (!reviewId) {
+        res.status(400).json({ error: "reviewId is required" });
+        return;
+      }
+
+      if (!userId) {
+        res.status(400).json({ error: "userId is required" });
+        return;
+      }
+
+      // Validate inputs but with better error handling
+      try {
+        reviewId = validateObjectId(reviewId, "Review Id");
+        userId = validateObjectId(userId, "User Id");
+      } catch (validationError) {
+        console.error('Validation error:', validationError);
+        res.status(400).json({ error: validationError.message || "Invalid input data" });
+        return;
+      }
+
+      // Try to toggle like with detailed error handling
+      try {
+        const review = await toggleLike(reviewId, userId);
+        res.status(200).json(review);
+      } catch (toggleError) {
+        console.error('Error toggling like:', toggleError);
+        res.status(500).json({ 
+          error: toggleError.message || "Failed to toggle like",
+          details: String(toggleError)
+        });
+      }
     } catch (e) {
-      handleErrors(res, e, 400);
-      return;
-    }
-
-    try {
-      const review = await toggleLike(reviewId, userId);
-      res.status(200).json(review);
-
-    } catch (e) {
-      handleErrors(res, e, 500);
+      console.error('Unexpected error in like route:', e);
+      res.status(500).json({ 
+        error: "An unexpected error occurred", 
+        details: String(e)
+      });
     }
   });
 

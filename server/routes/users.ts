@@ -125,7 +125,7 @@ router.route("/getuser").get(async (req: express.Request, res: express.Response)
       res.status(400).json({ error: "Failed to find user" });
       return;
     }
-    res.clearCookie("session_token", { httpOnly: true });
+    //res.clearCookie("session_token", { httpOnly: true });
     if (foundUser) {
       res.json({ user: foundUser });
       return;
