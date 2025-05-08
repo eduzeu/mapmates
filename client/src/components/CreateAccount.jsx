@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import '../App.css';
 import { useNavigate } from "react-router-dom";
 import styled from 'styled-components';
@@ -15,10 +15,31 @@ signup button */
         loginEmail: "",
         confirmPassword: ""
     });
-
-
+    const [loggedIn, setLoggedIn] = useState(false);
     const navigate = useNavigate();
-
+    useEffect(() => {
+      const isLoggedIn = async () => {
+        try {
+          const response = await fetch('http://localhost:3000/users/loggedIn', {
+            method: 'GET',
+            credentials: "include"
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log(data);
+          if (data.loggedIn) {
+            alert("You are already logged in");
+            setLoggedIn(true);
+            navigate("/");
+          }
+        } catch (err) {
+          console.error("Error fetching user:", err);
+        }
+      };
+      isLoggedIn();
+    }, [navigate]);
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
