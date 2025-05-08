@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "./UserFeed.css";
+import "./userFeed.css";
 
 function UserFeed() {
   const [feedData, setFeedData] = useState({
@@ -25,13 +25,18 @@ function UserFeed() {
           method: "GET",
           credentials: "include" // Send cookies with request
         });
-        
+
         if (response.ok) {
           const data = await response.json();
+<<<<<<< HEAD
           if (data.user && data.user._id) {
+=======
+          if (data.user) {
+>>>>>>> 14e6a6c4cc4b15e30c58d234b1d2aa7766844ac2
             setUserId(data.user._id);
             // Switch to friends feed if user is logged in
             setFeedType("friends");
+            console.log("User ID:", data.user._id);
           }
         } else {
           console.log("User not logged in or session expired");
@@ -59,7 +64,7 @@ function UserFeed() {
     setLoading(true);
     try {
       let url;
-      
+
       switch (feedType) {
         case "user":
           if (!userId) throw new Error("User ID is required for user feed");
@@ -76,7 +81,7 @@ function UserFeed() {
       const response = await fetch(url, {
         credentials: "include" // Send cookies with request
       });
-      
+
       if (!response.ok) {
         // If we get a 404 or other error on friends/user feed, fall back to general feed
         if ((feedType === "friends" || feedType === "user") && response.status !== 200) {
@@ -86,9 +91,9 @@ function UserFeed() {
         }
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       // If loading more posts (page > 1), append to existing posts
       if (page > 1) {
         setFeedData(prev => ({
@@ -98,7 +103,7 @@ function UserFeed() {
       } else {
         setFeedData(data);
       }
-      
+
     } catch (err) {
       setError(err.message);
       console.error("Error fetching feed:", err);
@@ -327,7 +332,7 @@ const handleAddComment = async (postId) => {
   return (
     <div className="feed-container">
       <h2>MapMates Feed</h2>
-      
+
       {/* Login notice if not logged in */}
       {!userId && (
         <div className="auth-notice">
@@ -336,26 +341,26 @@ const handleAddComment = async (postId) => {
           </p>
         </div>
       )}
-      
+
       {/* Feed type selector */}
       <div className="feed-selector">
-        <button 
-          className={feedType === "general" ? "active" : ""} 
+        <button
+          className={feedType === "general" ? "active" : ""}
           onClick={() => handleFeedTypeChange("general")}
         >
           All Activity
         </button>
-        
+
         {userId && (
           <>
-            <button 
-              className={feedType === "friends" ? "active" : ""} 
+            <button
+              className={feedType === "friends" ? "active" : ""}
               onClick={() => handleFeedTypeChange("friends")}
             >
               Friends
             </button>
-            <button 
-              className={feedType === "user" ? "active" : ""} 
+            <button
+              className={feedType === "user" ? "active" : ""}
               onClick={() => handleFeedTypeChange("user")}
             >
               My Activity
@@ -363,10 +368,10 @@ const handleAddComment = async (postId) => {
           </>
         )}
       </div>
-      
+
       {/* Error message */}
       {error && <div className="error-message">{error}</div>}
-      
+
       {/* Feed content */}
       <div className="feed-list">
         {feedData.posts && feedData.posts.map((post) => (
@@ -382,7 +387,7 @@ const handleAddComment = async (postId) => {
                 <span className="post-time">{formatDate(post.timestamp)}</span>
               </div>
             </div>
-            
+
             {/* Location */}
             {post.locationName && (
               <div className="post-location">
@@ -391,12 +396,12 @@ const handleAddComment = async (postId) => {
                 </Link>
               </div>
             )}
-            
+
             {/* Post content */}
             <div className="post-content">
               {post.text || post.content}
             </div>
-            
+
             {/* Post image */}
             {post.image && (
               <div className="post-images">
@@ -411,19 +416,23 @@ const handleAddComment = async (postId) => {
             )}
             {!post.image && post.images && post.images.length > 0 && (
               <div className="post-images">
-                <img 
-                  src={post.images[0]} 
-                  alt="Post" 
+                <img
+                  src={post.images[0]}
+                  alt="Post"
                   onError={(e) => {
                     e.target.src = `https://placehold.co/600x400?text=Review+at+${post.locationName || 'Location'}`;
                   }}
                 />
               </div>
             )}
+<<<<<<< HEAD
             
             {/* Comments */}
             {renderComments(post)}
             
+=======
+
+>>>>>>> 14e6a6c4cc4b15e30c58d234b1d2aa7766844ac2
             {/* Post actions */}
             <div className="post-actions">
               <button 
@@ -439,8 +448,13 @@ const handleAddComment = async (postId) => {
                 💬 {post.comments ? post.comments.length : 0}
               </button>
               {post.coordinates && (
+<<<<<<< HEAD
                 <Link 
                   to={`/maps?lat=${post.coordinates.latitude || post.coordinates[0]}&lng=${post.coordinates.longitude || post.coordinates[1]}`}
+=======
+                <Link
+                  to={`/maps?lat=${post.coordinates[0]}&lng=${post.coordinates[1]}`}
+>>>>>>> 14e6a6c4cc4b15e30c58d234b1d2aa7766844ac2
                   className="view-on-map-link"
                 >
                   <button className="action-button">
@@ -452,22 +466,22 @@ const handleAddComment = async (postId) => {
           </div>
         ))}
       </div>
-      
+
       {/* Loading indicator */}
       {loading && <div className="loading">Loading feed...</div>}
-      
+
       {/* Load more button */}
       {feedData.hasNextPage && !loading && (
         <button className="load-more-button" onClick={loadMore}>
           Load More
         </button>
       )}
-      
+
       {/* End of feed message */}
       {!feedData.hasNextPage && feedData.posts && feedData.posts.length > 0 && !loading && (
         <div className="end-of-feed">You've reached the end of the feed!</div>
       )}
-      
+
       {/* Empty feed message */}
       {!loading && (!feedData.posts || feedData.posts.length === 0) && !error && (
         <div className="empty-feed">
