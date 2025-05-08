@@ -28,11 +28,7 @@ function UserFeed() {
 
         if (response.ok) {
           const data = await response.json();
-<<<<<<< HEAD
           if (data.user && data.user._id) {
-=======
-          if (data.user) {
->>>>>>> 14e6a6c4cc4b15e30c58d234b1d2aa7766844ac2
             setUserId(data.user._id);
             // Switch to friends feed if user is logged in
             setFeedType("friends");
@@ -425,14 +421,10 @@ const handleAddComment = async (postId) => {
                 />
               </div>
             )}
-<<<<<<< HEAD
             
             {/* Comments */}
             {renderComments(post)}
             
-=======
-
->>>>>>> 14e6a6c4cc4b15e30c58d234b1d2aa7766844ac2
             {/* Post actions */}
             <div className="post-actions">
               <button 
@@ -448,13 +440,8 @@ const handleAddComment = async (postId) => {
                 💬 {post.comments ? post.comments.length : 0}
               </button>
               {post.coordinates && (
-<<<<<<< HEAD
                 <Link 
                   to={`/maps?lat=${post.coordinates.latitude || post.coordinates[0]}&lng=${post.coordinates.longitude || post.coordinates[1]}`}
-=======
-                <Link
-                  to={`/maps?lat=${post.coordinates[0]}&lng=${post.coordinates[1]}`}
->>>>>>> 14e6a6c4cc4b15e30c58d234b1d2aa7766844ac2
                   className="view-on-map-link"
                 >
                   <button className="action-button">
