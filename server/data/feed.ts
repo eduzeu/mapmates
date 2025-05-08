@@ -3,25 +3,22 @@ import { users } from '../config/mongoCollections.js';
 import { reviews } from '../config/mongoCollections.js';
 import { NotFoundError, ServerError, ValidationError } from '../helpers/errors.ts';
 import { validateObjectId, validateString } from '../helpers/validation.ts';
+import { Review } from './review.ts';
 
-interface FeedPost {
-  _id: ObjectId;
-  type: string; // 'review' or 'visit'
-  userId: ObjectId;
+// Enhanced review with user information for feed display
+export interface ReviewWithUserInfo extends Review {
   username: string;
   userAvatar?: string;
-  locationId?: ObjectId;
   locationName: string;
-  content: string;
-  timestamp: Date;
-  likes: number;
-  comments: number;
   images?: string[];
-  coordinates?: [number, number];
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
-interface FeedPagination {
-  posts: FeedPost[];
+export interface FeedPagination {
+  posts: ReviewWithUserInfo[];
   totalPosts: number;
   currentPage: number;
   totalPages: number;
@@ -29,209 +26,304 @@ interface FeedPagination {
 }
 
 /**
- * Helper function to generate placeholder images for posts
+ * Get all reviews with user information for the feed
  */
-const generatePlaceholderImages = (type: string, locationName: string): string[] => {
-  if (type === 'visit') {
-    return [`https://placehold.co/600x400?text=Visited+${encodeURIComponent(locationName)}`];
-  } else if (type === 'review') {
-    return [`https://placehold.co/600x400?text=Review+of+${encodeURIComponent(locationName)}`];
-  }
-  return [];
-};
-
-/**
- * Get a combined feed from both restaurant visits and reviews
- */
-export const getFeed = async (page: number = 1, limit: number = 10): Promise<FeedPagination> => {
-  // Validate pagination parameters
-  if (page < 1) {
-    throw new ValidationError('Page number must be at least 1');
-  }
-  
-  if (limit < 1 || limit > 50) {
-    throw new ValidationError('Limit must be between 1 and 50');
-  }
-
+export const getAllReviewsWithUserInfo = async (page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   try {
-    const userCollection = await users();
+    if (page < 1) {
+      throw new ValidationError('Page number must be at least 1');
+    }
+    
+    if (limit < 1 || limit > 50) {
+      throw new ValidationError('Limit must be between 1 and 50');
+    }
+    
     const reviewCollection = await reviews();
+    const userCollection = await users();
     
-    // Get all users to extract their visited places
-    const usersList = await userCollection.find({}).toArray();
+    // Get total count for pagination
+    const totalPosts = await reviewCollection.countDocuments({});
+    const totalPages = Math.ceil(totalPosts / limit);
     
-    // Extract all visits from users
-    const visitPosts: FeedPost[] = [];
+    // Get reviews with pagination
+    const reviewsList = await reviewCollection
+      .find({})
+      .sort({ timestamp: -1 }) // Newest first
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .toArray();
     
-    usersList.forEach(user => {
-      if (user.visitedPlaces && Array.isArray(user.visitedPlaces)) {
-        user.visitedPlaces.forEach(place => {
-          const placeholderImages = generatePlaceholderImages('visit', place.place);
-          
-          visitPosts.push({
-            _id: new ObjectId(),
-            type: 'visit',
-            userId: user._id,
-            username: user.username,
-            userAvatar: user.avatar || `https://i.pravatar.cc/150?u=${user._id.toString()}`,
-            locationName: place.place,
-            content: `Checked in at ${place.place}!`,
-            timestamp: new Date(place.visitedAt),
-            likes: Math.floor(Math.random() * 10), // Mock likes
-            comments: Math.floor(Math.random() * 5), // Mock comments
-            images: placeholderImages,
-            coordinates: place.coordinates ? 
-              [place.coordinates.latitude, place.coordinates.longitude] : 
-              undefined
-          });
-        });
-      }
-    });
+    // Gather all user IDs from reviews
+    const userIds = [...new Set(reviewsList.map(review => review.userId.toString()))];
     
-    // Get all reviews
-    const reviewsList = await reviewCollection.find({}).toArray();
+    // Get all users in one query
+    const userList = await userCollection
+      .find({ _id: { $in: userIds.map(id => new ObjectId(id)) } })
+      .toArray();
     
-    // Convert reviews to feed posts
-    const reviewPosts: FeedPost[] = await Promise.all(reviewsList.map(async (review) => {
-      // Find the user who wrote the review
-      const user = usersList.find(u => u._id.equals(review.userId));
-      const username = user ? user.username : "Unknown User";
+    // Create a map for quick user lookup
+    const userMap = new Map(userList.map(user => [user._id.toString(), user]));
+    
+    // Enhanced reviews with user and location info
+    const enhancedReviews = await Promise.all(reviewsList.map(async (review) => {
+      const user = userMap.get(review.userId.toString());
       
-      // This would need to be updated to get the actual restaurant name
+      // Try to find location information from the user's visited places
       let locationName = "Unknown Location";
+      let coordinates = undefined;
+      let images = undefined;
       
-      // Try to find the location name from visited places
       if (user && user.visitedPlaces) {
-        const matchingPlace = user.visitedPlaces.find(place => 
+        // Try to find the location in the user's visited places
+        const visitedPlace = user.visitedPlaces.find(place => 
           place.placeId && place.placeId.toString() === review.placeId.toString()
         );
-        if (matchingPlace) {
-          locationName = matchingPlace.place;
+        
+        if (visitedPlace) {
+          locationName = visitedPlace.place;
+          
+          // Extract coordinates if available
+          if (visitedPlace.coordinates) {
+            coordinates = {
+              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat,
+              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long
+            };
+          }
+          
+          // Generate placeholder image
+          images = [`https://placehold.co/600x400?text=Review+of+${encodeURIComponent(locationName)}`];
         }
       }
       
-      const placeholderImages = generatePlaceholderImages('review', locationName);
-      
       return {
-        _id: review._id,
-        type: 'review',
-        userId: review.userId,
-        username: username,
+        ...review,
+        username: user ? user.username : "Unknown User",
         userAvatar: user?.avatar || `https://i.pravatar.cc/150?u=${review.userId.toString()}`,
-        locationId: review.placeId,
-        locationName: locationName,
-        content: review.text,
-        timestamp: new Date(review.timestamp),
-        likes: Math.floor(Math.random() * 10), // Mock likes
-        comments: Math.floor(Math.random() * 5), // Mock comments
-        images: placeholderImages
+        locationName,
+        images,
+        coordinates
       };
     }));
     
-    // Combine and sort all posts by timestamp (newest first)
-    const allPosts = [...visitPosts, ...reviewPosts].sort((a, b) => 
-      b.timestamp.getTime() - a.timestamp.getTime()
-    );
-    
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const paginatedPosts = allPosts.slice(startIndex, endIndex);
-    
     return {
-      posts: paginatedPosts,
-      totalPosts: allPosts.length,
+      posts: enhancedReviews,
+      totalPosts,
       currentPage: page,
-      totalPages: Math.ceil(allPosts.length / limit),
-      hasNextPage: endIndex < allPosts.length
+      totalPages,
+      hasNextPage: page < totalPages
     };
-    
   } catch (e) {
-    console.error('Error in getFeed:', e);
-    throw new ServerError('Failed to retrieve feed data');
-  }
-};
-
-/**
- * Get feed for a specific user (e.g., for a user profile)
- */
-export const getUserFeed = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
-  try {
-    userId = validateObjectId(userId, 'User ID');
-    
-    // Get the combined feed first
-    const fullFeed = await getFeed(1, 1000); // Get a large number to filter from
-    
-    // Filter to only include posts from the requested user
-    const userPosts = fullFeed.posts.filter(post => 
-      post.userId.toString() === userId
-    );
-    
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const paginatedPosts = userPosts.slice(startIndex, endIndex);
-    
-    return {
-      posts: paginatedPosts,
-      totalPosts: userPosts.length,
-      currentPage: page,
-      totalPages: Math.ceil(userPosts.length / limit),
-      hasNextPage: endIndex < userPosts.length
-    };
-    
-  } catch (e) {
-    console.error('Error in getUserFeed:', e);
     if (e instanceof ValidationError) {
       throw e;
     }
-    throw new ServerError('Failed to retrieve user feed data');
+    console.error('Error in getAllReviewsWithUserInfo:', e);
+    throw new ServerError('Failed to get feed data');
   }
 };
 
 /**
- * Get feed for a friend network (user and their friends)
+ * Get reviews by a specific user with enhanced information
  */
-export const getFriendsFeed = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
+export const getReviewsByUserWithInfo = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   try {
     userId = validateObjectId(userId, 'User ID');
     
+    if (page < 1) {
+      throw new ValidationError('Page number must be at least 1');
+    }
+    
+    if (limit < 1 || limit > 50) {
+      throw new ValidationError('Limit must be between 1 and 50');
+    }
+    
+    const reviewCollection = await reviews();
     const userCollection = await users();
+    
+    // Get the user
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
     
     if (!user) {
       throw new NotFoundError('User not found');
     }
     
-    // Get the combined feed first
-    const fullFeed = await getFeed(1, 1000); // Get a large number to filter from
+    // Get total count for pagination
+    const totalPosts = await reviewCollection.countDocuments({ userId: new ObjectId(userId) });
+    const totalPages = Math.ceil(totalPosts / limit);
     
-    // Get the user's friend IDs
-    const friendIds = user.friends ? user.friends.map(friend => friend.toString()) : [];
+    // Get reviews with pagination
+    const reviewsList = await reviewCollection
+      .find({ userId: new ObjectId(userId) })
+      .sort({ timestamp: -1 }) // Newest first
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .toArray();
     
-    // Filter to only include posts from the user and their friends
-    const friendsPosts = fullFeed.posts.filter(post => 
-      post.userId.toString() === userId || friendIds.includes(post.userId.toString())
-    );
-    
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const paginatedPosts = friendsPosts.slice(startIndex, endIndex);
+    // Enhanced reviews with location info
+    const enhancedReviews = reviewsList.map(review => {
+      // Try to find location information from the user's visited places
+      let locationName = "Unknown Location";
+      let coordinates = undefined;
+      let images = undefined;
+      
+      if (user.visitedPlaces) {
+        // Try to find the location in the user's visited places
+        const visitedPlace = user.visitedPlaces.find(place => 
+          place.placeId && place.placeId.toString() === review.placeId.toString()
+        );
+        
+        if (visitedPlace) {
+          locationName = visitedPlace.place;
+          
+          // Extract coordinates if available
+          if (visitedPlace.coordinates) {
+            coordinates = {
+              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat,
+              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long
+            };
+          }
+          
+          // Generate placeholder image
+          images = [`https://placehold.co/600x400?text=Review+of+${encodeURIComponent(locationName)}`];
+        }
+      }
+      
+      return {
+        ...review,
+        username: user.username,
+        userAvatar: user.avatar || `https://i.pravatar.cc/150?u=${userId}`,
+        locationName,
+        images,
+        coordinates
+      };
+    });
     
     return {
-      posts: paginatedPosts,
-      totalPosts: friendsPosts.length,
+      posts: enhancedReviews,
+      totalPosts,
       currentPage: page,
-      totalPages: Math.ceil(friendsPosts.length / limit),
-      hasNextPage: endIndex < friendsPosts.length
+      totalPages,
+      hasNextPage: page < totalPages
     };
-    
   } catch (e) {
-    console.error('Error in getFriendsFeed:', e);
     if (e instanceof ValidationError || e instanceof NotFoundError) {
       throw e;
     }
-    throw new ServerError('Failed to retrieve friends feed data');
+    console.error('Error in getReviewsByUserWithInfo:', e);
+    throw new ServerError('Failed to get user feed data');
+  }
+};
+
+/**
+ * Get reviews by a user and their friends
+ */
+export const getFriendsReviewsWithInfo = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
+  try {
+    userId = validateObjectId(userId, 'User ID');
+    
+    if (page < 1) {
+      throw new ValidationError('Page number must be at least 1');
+    }
+    
+    if (limit < 1 || limit > 50) {
+      throw new ValidationError('Limit must be between 1 and 50');
+    }
+    
+    const reviewCollection = await reviews();
+    const userCollection = await users();
+    
+    // Get user
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+    
+    // Get friend IDs
+    const friendIds = user.friends 
+      ? user.friends.map(friend => new ObjectId(friend.toString())) 
+      : [];
+    
+    // Add user's own ID to the list to include their reviews
+    const userAndFriendIds = [new ObjectId(userId), ...friendIds];
+    
+    // Get total count for pagination
+    const totalPosts = await reviewCollection.countDocuments({ 
+      userId: { $in: userAndFriendIds }
+    });
+    const totalPages = Math.ceil(totalPosts / limit);
+    
+    // Get reviews with pagination
+    const reviewsList = await reviewCollection
+      .find({ userId: { $in: userAndFriendIds } })
+      .sort({ timestamp: -1 }) // Newest first
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .toArray();
+    
+    // Gather all user IDs from reviews
+    const reviewUserIds = [...new Set(reviewsList.map(review => review.userId.toString()))];
+    
+    // Get all users in one query
+    const userList = await userCollection
+      .find({ _id: { $in: reviewUserIds.map(id => new ObjectId(id)) } })
+      .toArray();
+    
+    // Create a map for quick user lookup
+    const userMap = new Map(userList.map(user => [user._id.toString(), user]));
+    
+    // Enhanced reviews with user and location info
+    const enhancedReviews = await Promise.all(reviewsList.map(async (review) => {
+      const reviewUser = userMap.get(review.userId.toString());
+      
+      // Try to find location information from the user's visited places
+      let locationName = "Unknown Location";
+      let coordinates = undefined;
+      let images = undefined;
+      
+      if (reviewUser && reviewUser.visitedPlaces) {
+        // Try to find the location in the user's visited places
+        const visitedPlace = reviewUser.visitedPlaces.find(place => 
+          place.placeId && place.placeId.toString() === review.placeId.toString()
+        );
+        
+        if (visitedPlace) {
+          locationName = visitedPlace.place;
+          
+          // Extract coordinates if available
+          if (visitedPlace.coordinates) {
+            coordinates = {
+              latitude: visitedPlace.coordinates.latitude || visitedPlace.coordinates.lat,
+              longitude: visitedPlace.coordinates.longitude || visitedPlace.coordinates.long
+            };
+          }
+          
+          // Generate placeholder image
+          images = [`https://placehold.co/600x400?text=Review+of+${encodeURIComponent(locationName)}`];
+        }
+      }
+      
+      return {
+        ...review,
+        username: reviewUser ? reviewUser.username : "Unknown User",
+        userAvatar: reviewUser?.avatar || `https://i.pravatar.cc/150?u=${review.userId.toString()}`,
+        locationName,
+        images,
+        coordinates
+      };
+    }));
+    
+    return {
+      posts: enhancedReviews,
+      totalPosts,
+      currentPage: page,
+      totalPages,
+      hasNextPage: page < totalPages
+    };
+  } catch (e) {
+    if (e instanceof ValidationError || e instanceof NotFoundError) {
+      throw e;
+    }
+    console.error('Error in getFriendsReviewsWithInfo:', e);
+    throw new ServerError('Failed to get friends feed data');
   }
 };

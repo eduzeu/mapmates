@@ -5,7 +5,6 @@ import users from "./users.ts";
 import badges from "./badges.ts";
 import feed from "./feed.ts";  // Import the feed router
 
-
 const constructorMethod = (app: express.Express) => {
   console.log("Registering /restaurants route");
   app.use("/restaurants", restaurants);
@@ -26,7 +25,6 @@ const constructorMethod = (app: express.Express) => {
   app.use((_: express.Request, res: express.Response) => {
     res.status(404).json({ error: "Not found" });
   });
-
 
   console.log("Registered all routes")
 }
