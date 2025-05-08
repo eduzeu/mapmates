@@ -9,10 +9,11 @@ import {
   getReviewById,
   reviewsByRestaurant,
   reviewsByUser,
+  toggleLike,
   updateReview,
 } from "../data/review.ts";
 import { handleErrors } from "../helpers/errors.ts";
-import { validateCloudinaryUrl, validateDateString, validateString } from "../helpers/validation.ts";
+import { validateCloudinaryUrl, validateDateString, validateObjectId, validateString } from "../helpers/validation.ts";
 
 const router = Router();
 
@@ -143,6 +144,34 @@ router
     }
   });
 
+router.route("/like/")
+  .post(async (req: express.Request, res: express.Response) => {
+    if (!req.body) {
+      res.status(400).json({ error: "No request body" });
+      return;
+    }
+
+    let reviewId: string | undefined = req.body.reviewId;
+    let userId: string | undefined = req.body.userId;
+
+    try {
+      reviewId = validateString(reviewId, "Review Id");
+      userId = validateString(userId, "User Id");
+
+    } catch (e) {
+      handleErrors(res, e, 400);
+      return;
+    }
+
+    try {
+      const review = await toggleLike(reviewId, userId);
+      res.status(200).json(review);
+
+    } catch (e) {
+      handleErrors(res, e, 500);
+    }
+  });
+
 router
   .route("/:id")
   .get(async (req: express.Request, res: express.Response) => {
@@ -216,7 +245,7 @@ router
     let image: string | undefined = req.body.image;
 
     try {
-      userId = validateString(userId, "User Id");
+      userId = validateObjectId(userId, "User Id");
       placeId = validateString(placeId, "Place Id");
       text = validateString(text, "Review Text");
       timestamp = validateDateString(timestamp, "Timestamp");
@@ -226,6 +255,7 @@ router
       return;
     }
 
+    placeId = xss(placeId);
     text = xss(text);
 
     try {

@@ -15,10 +15,11 @@ import { restaurantExists } from "./restaurants.ts";
 
 export interface Review {
   userId: ObjectId;
-  placeId: ObjectId;
+  placeId: string;
   text: string;
   image: string | null;
   timestamp: string;
+  likes: ObjectId[];
   comments: Comment[];
 }
 
@@ -53,17 +54,18 @@ export const addReview = async (
   image?: string
 ): Promise<Review> => {
   userId = validateObjectId(userId, "User Id");
-  placeId = validateObjectId(placeId, "Place Id");
+  placeId = validateString(placeId, "Place Id");
   text = validateString(text, "Review Text");
   timestamp = validateDateString(timestamp, "Timestamp");
   if (image) image = validateCloudinaryUrl(image, "Image Url");
 
   const newReview: Review = {
     userId: new ObjectId(userId),
-    placeId: new ObjectId(placeId),
+    placeId: placeId,
     text: text,
     timestamp: timestamp,
     image: image ? image : null,
+    likes: [],
     comments: [],
   };
 
@@ -127,6 +129,36 @@ export const deleteReview = async (id: string): Promise<Review> => {
 
   return review;
 };
+
+export const toggleLike = async (reviewId: string, userId: string): Promise<Review> => {
+  reviewId = validateObjectId(reviewId, "Review Id");
+  userId = validateObjectId(userId, "User Id")
+
+  const review = await getReviewById(reviewId);
+  const liked = review.likes.includes(new ObjectId(userId));
+
+  const collection = await reviews();
+  let updateInfo;
+
+  if (liked) {
+    updateInfo = await collection.findOneAndUpdate(
+      { _id: new ObjectId(reviewId) },
+      { $pull: { likes: new ObjectId(userId) } },
+      { returnDocument: "after" }
+    );
+  } else {
+    updateInfo = await collection.findOneAndUpdate(
+      { _id: new ObjectId(reviewId) },
+      { $push: { likes: new ObjectId(userId) } },
+      { returnDocument: "after" }
+    );
+  }
+
+  if (!updateInfo?.ok || !updateInfo?.value)
+    throw new ServerError("Could not update the review.");
+
+  return updateInfo.value;
+}
 
 export const reviewsByRestaurant = async (
   restaurantId: string
