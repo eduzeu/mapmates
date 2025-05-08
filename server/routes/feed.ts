@@ -1,18 +1,22 @@
 import express, { Router } from "express";
 import { handleErrors } from "../helpers/errors.ts";
 import { validateObjectId } from "../helpers/validation.ts";
-import { getFeed, getUserFeed, getFriendsFeed } from "../data/feed.ts";
+import { 
+  getAllReviewsWithUserInfo, 
+  getReviewsByUserWithInfo, 
+  getFriendsReviewsWithInfo 
+} from "../data/feed.ts";
 
 const router = Router();
 
-// Get general feed (all posts)
+// Get general feed (all reviews)
 router.route("/")
   .get(async (req: express.Request, res: express.Response) => {
     try {
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
-      const feedData = await getFeed(page, limit);
+      const feedData = await getAllReviewsWithUserInfo(page, limit);
       res.status(200).json(feedData);
       
     } catch (e) {
@@ -30,7 +34,7 @@ router.route("/user/:id")
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
-      const userFeedData = await getUserFeed(userId, page, limit);
+      const userFeedData = await getReviewsByUserWithInfo(userId, page, limit);
       res.status(200).json(userFeedData);
       
     } catch (e) {
@@ -48,7 +52,7 @@ router.route("/friends/:id")
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
-      const friendsFeedData = await getFriendsFeed(userId, page, limit);
+      const friendsFeedData = await getFriendsReviewsWithInfo(userId, page, limit);
       res.status(200).json(friendsFeedData);
       
     } catch (e) {

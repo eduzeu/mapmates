@@ -88,6 +88,7 @@ function Map() {
     id: user
   });
   const [showSearchForm, setShowSearchForm] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [visitedIds, setVisitedIds] = useState(() => {
     const saved = localStorage.getItem("visitedRestaurantIds");
     return saved ? new Set(JSON.parse(saved)) : new Set();
@@ -113,7 +114,7 @@ function Map() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/getuser', {
+      const response = await fetch('http://localhost:3000/users/getUser', {
         method: 'GET',
         credentials: "include"
       });
@@ -132,24 +133,51 @@ function Map() {
     }
   };
 
-  const addNewRestaurant = async (newRestaurant) => {
+  const isLoggedIn = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/restaurants/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newRestaurant)
+      const response = await fetch('http://localhost:3000/users/loggedIn', {
+        method: 'GET',
+        credentials: "include"
       });
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      setFormData({ name: "", type: "", id: "" });
-      setShowForm(false);
-      fetchRestaurants();
+      const data = await response.json();
+      console.log(data);
+      if (data.loggedIn) {
+        setLoggedIn(true);
+      }
+      else {
+        setLoggedIn(false);
+      }
+    } catch (err) {
+      console.error("Error fetching user:", err);
+    }
+  }
 
-    } catch (e) {
-      console.error("Error adding restaurant:", e.message);
+  const addNewRestaurant = async (newRestaurant) => {
+    if (loggedIn) {
+      try {
+        const response = await fetch(`http://localhost:3000/restaurants/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newRestaurant)
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        setFormData({ name: "", type: "", id: "" });
+        setShowForm(false);
+        fetchRestaurants();
+
+      } catch (e) {
+        console.error("Error adding restaurant:", e.message);
+      }
+    }
+    else {
+      alert("Must be logged in to add a restaurant");
     }
   };
 
@@ -172,11 +200,9 @@ function Map() {
         },
         body: JSON.stringify({ type: selectedCuisine })
       });
-
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
       const data = await response.json();
       console.log("Search results:", data);
       setRestaurants(data);

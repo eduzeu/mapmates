@@ -109,7 +109,7 @@ router.route("/logout").get(async (req: express.Request, res: express.Response) 
   }
 });
 
-router.route("/getuser").get(async (req: express.Request, res: express.Response) => {
+router.route("/getUser").get(async (req: express.Request, res: express.Response) => {
   try {
     if(!req.cookies){
       console.log("not logged in");
@@ -125,7 +125,6 @@ router.route("/getuser").get(async (req: express.Request, res: express.Response)
       res.status(400).json({ error: "Failed to find user" });
       return;
     }
-    res.clearCookie("session_token", { httpOnly: true });
     if (foundUser) {
       res.json({ user: foundUser });
       return;
@@ -134,6 +133,24 @@ router.route("/getuser").get(async (req: express.Request, res: express.Response)
     }
   } catch (error: any) {
     res.status(400).json({ error: error.toString() });
+    return;
+  }
+});
+
+router.route("/loggedIn").get(async (req: express.Request, res: express.Response) => {
+  try {
+    if(!req.cookies || Object.keys(req.cookies).length == 0){
+      res.json({loggedIn: false});
+      return;
+    }
+    const token = req.cookies["session_token"] as string | undefined;
+    if(token){
+      await sessionTokenFunctions.sessionChecker(token);
+    }
+    res.json({loggedIn: true});
+    return;
+  } catch (error: any) {
+    res.json({ loggedIn: false });
     return;
   }
 });
