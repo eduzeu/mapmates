@@ -179,6 +179,34 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
   }
 }
 
+export const updateRestaurant = async (id: string, date: Date, name: string) => {
+  try {
+    const users = await usersCollection();
+    const user = await users.findOne({ _id: new ObjectId(id) });
+
+    if (!user) {
+      return { error: "User not found" };
+    }
+    const findPlace = user.visitedPlaces.find((place: any) => place.place === name);
+    if (!findPlace) {
+      return { error: `Place ${name} not found in visitedPlaces` };
+    }
+    const updatedPlace = await users.updateOne(
+      { _id: new ObjectId(id), "visitedPlaces.place": name },
+      { $set: { "visitedPlaces.$.visitedAt": date } }
+    );
+    if (updatedPlace.modifiedCount > 0) {
+      return { message: `Place ${name} successfully updated` };
+    }
+    return { error: "Failed to update the place" };
+
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error(error.message);
+    return { error: error.message };
+  }
+
+}
 
 export const deleteRestaurant = async (id: string, name: string) => {
   try {

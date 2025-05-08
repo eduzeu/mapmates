@@ -16,7 +16,7 @@ export function RestButton({ text, onClick }) {
 export const ButtonContainer = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 16px; // Adds space between buttons
+  gap: 25px;  
   align-items: center;
 `;
 

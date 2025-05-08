@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { getRestaurants, getRestaurantsById, searchRestaurants, searchRestaurantsByType, addRestaurant, deleteRestaurant, getAddedRestaurants } from "../data/restaurants";
+import { getRestaurants, getRestaurantsById, searchRestaurants, searchRestaurantsByType, addRestaurant, deleteRestaurant, getAddedRestaurants, updateRestaurant } from "../data/restaurants";
 import { validateObjectId, validateDateString, validateDate, validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
 const router = Router();
 
@@ -68,6 +68,34 @@ router.route("/add")
       res.status(500).json({ error: error.message });
     }
   });
+
+router.route("/update")
+  .put(async (req: express.Request, res: express.Response) => {
+    try {
+      const id: string = req.body.id;
+      const name: string = req.body.name;
+      const date: Date = req.body.visitedAt;
+      validateObjectId(id, "User Id");
+      validateString(name, "Restaurant Name");
+      // validateDate(date, "Visit Date");
+
+      const updateRest = await updateRestaurant(id, date, name);
+
+      if (updateRest === null) {
+        res.status(404).json({ error: "Restaurant not found" });
+        return;
+      }
+
+      res.status(200).json(updateRest);
+
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error(error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+  );
+
 router.route("/delete")
   .delete(async (req: express.Request, res: express.Response) => {
     try {

@@ -6,6 +6,7 @@ import userIconImg from '../assets/user.png';
 import visited from '../assets/visited.png';
 import notVisited from '../assets/notVisited.png';
 import { RestButton, ButtonContainer } from "./RestButton";
+import { Link } from "react-router-dom";
 
 const hobokenBounds = [
   [40.7684, -74.0401],
@@ -76,16 +77,21 @@ function LocationMarker({ onLocationFound }) {
 }
 
 function Map() {
+  const [user, setUser] = useState(null);
+
   const [restaurants, setRestaurants] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     type: "",
-    id: ""
+    id: user
   });
   const [showSearchForm, setShowSearchForm] = useState(false);
-
+  const [visitedIds, setVisitedIds] = useState(() => {
+    const saved = localStorage.getItem("visitedRestaurantIds");
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
   useEffect(() => {
     fetchRestaurants();
     fetchUser();
@@ -115,6 +121,11 @@ function Map() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
+      setFormData({
+        ...formData,
+        id: data.user._id
+      });
+      setUser(data.user._id);
       console.log(data);
     } catch (err) {
       console.error("Error fetching user:", err);
@@ -133,7 +144,7 @@ function Map() {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      setFormData({ name: "", type: "" });
+      setFormData({ name: "", type: "", id: "" });
       setShowForm(false);
       fetchRestaurants();
 
@@ -208,7 +219,45 @@ function Map() {
     setShowForm(false);
   }
 
+  const handleChangeRestaurantPinColor = async (id, name, type) => {
+    console.log("Changing pin color for restaurant:", id, name, type);
+    setVisitedIds(prev => {
+      const updated = new Set(prev);
+      updated.add(id);
+      localStorage.setItem("visitedRestaurantIds", JSON.stringify(Array.from(updated)));
+      return updated;
+    });
+
+    await addNewRestaurant({
+      name: name,
+      type: type,
+      id: user,
+      visitedAt: new Date().toISOString(),
+      coordinates: {
+        lat: userLocation.lat,
+        long: userLocation.lng
+      }
+    });
+
+  };
   const hobokenCenter = [40.7440, -74.0254];
+
+  const handleUpdateVisitedRestaurant = async (id) => {
+    console.log("Updating visited restaurant:", id);
+    const update = await fetch(`http://localhost:3000/restaurants/update/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id, visitedAt: new Date().toISOString() })
+    });
+    if (!update.ok) {
+      throw new Error(`HTTP error! Status: ${update.status}`);
+    }
+    const data = await update.json();
+    console.log("Update response:", data);
+
+  }
 
   return (
     <>
@@ -217,10 +266,9 @@ function Map() {
       </div>
 
 
-      <div className="button-container" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+      <div className="button-container" style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', marginBottom: '20px' }}>
         <ButtonContainer>
           <RestButton text="Add Restaurant" onClick={handleAddRestaurantClick} />
-          <RestButton text="Delete Visited Restaurant" />
           <RestButton text="Filter Restaurants" onClick={handleSearchRestaurant} />
 
         </ButtonContainer>
@@ -279,7 +327,7 @@ function Map() {
                   required
                 />
               </div>
-              <div>
+              {/* <div>
                 <label>user id: </label>
                 <input
                   type="text"
@@ -288,7 +336,7 @@ function Map() {
                   onChange={handleFormChange}
                   required
                 />
-              </div>
+              </div> */}
               <button type="submit" style={{ marginTop: '10px' }}>Submit</button>
               <button
                 type="button"
@@ -323,11 +371,15 @@ function Map() {
             .filter(restaurant => restaurant.type === 'Feature' && restaurant.geometry?.coordinates)
             .map((restaurant, index) => {
               const [lon, lat] = restaurant.geometry.coordinates;
+              const restaurantId = restaurant.properties.id || `${restaurant.properties.name}-${index}`;
+              const isVisited = visitedIds.has(restaurantId);
+
+              const icon = isVisited ? createCustomIcon1(visited) : createCustomIcon(notVisited);
               return (
                 <Marker
                   key={index}
                   position={[lat, lon]}
-                  icon={createCustomIcon(notVisited)}
+                  icon={icon}
                 >
                   <Popup>
                     <div>
@@ -339,7 +391,20 @@ function Map() {
                       {restaurant.properties.website && (
                         <p><a href={restaurant.properties.website} target="_blank" rel="noopener noreferrer">Website</a></p>
                       )}
-                      <p> Already visited this place? make it blue! </p>
+                      {!isVisited ? (
+                        <button onClick={() => handleChangeRestaurantPinColor(
+                          restaurantId,
+                          restaurant.properties.name,
+                          restaurant.properties.datasource.raw.cuisine?.toLowerCase() ? 'restaurant' : 'other'
+                        )}>
+                          Already visited this place? Make it blue!
+                        </button>
+                      ) : (
+                        <button onClick={() => handleUpdateVisitedRestaurant(user, restaurant.properties.name)}>
+                          Update visit date!
+                        </button>)}
+
+
                     </div>
                   </Popup>
                 </Marker>
@@ -372,6 +437,7 @@ function Map() {
                           <h3>{place.place}</h3>
                           <p>Type: {place.cuisine}</p>
                           <p>Visited: {new Date(place.visitedAt).toLocaleDateString()}</p>
+                          <button> Update visit date!</button>
                         </div>
                       </Popup>
                     </Marker>
