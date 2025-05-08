@@ -58,17 +58,8 @@ export const validateDate = (date: any, dateName?: string): Date => {
 };
 
 
-export const validateDateString = (dateString, paramName) => {
-  if (!dateString) {
-    throw new ValidationError(`You must provide a ${paramName}`);
-  }
-  if (typeof dateString !== "string") {
-    throw new ValidationError(`${paramName} must be a string`);
-  }
-  dateString = dateString.trim();
-  if (dateString.length === 0) {
-    throw new ValidationError(`${paramName} cannot be an empty string or just spaces`);
-  }
+export const validateDateString = (dateString: any, paramName?: string): string => {
+  dateString = validateString(dateString, paramName);
   
   // Check if the date is valid
   const date = new Date(dateString);

@@ -161,6 +161,7 @@ async function seed() {
         placeId: place._id,
         text: getRandomReview(place.name),
         timestamp: getRandomPastDate(15).toISOString(),
+        likes: [],
         comments: [] // Empty comments array
       });
     }
@@ -174,6 +175,7 @@ async function seed() {
         placeId: place._id,
         text: getRandomReview(place.name),
         timestamp: getRandomPastDate(25).toISOString(),
+        likes: [],
         comments: [] // Empty comments array
       });
     }
@@ -187,6 +189,7 @@ async function seed() {
         placeId: place._id,
         text: getRandomReview(place.name),
         timestamp: getRandomPastDate(35).toISOString(),
+        likes: [],
         comments: [] // Empty comments array
       });
     }

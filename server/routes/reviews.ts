@@ -13,7 +13,12 @@ import {
   updateReview,
 } from "../data/review.ts";
 import { handleErrors } from "../helpers/errors.ts";
-import { validateCloudinaryUrl, validateDateString, validateObjectId, validateString } from "../helpers/validation.ts";
+import {
+  validateCloudinaryUrl,
+  validateDateString,
+  validateObjectId,
+  validateString,
+} from "../helpers/validation.ts";
 
 const router = Router();
 
@@ -31,33 +36,22 @@ router
     let timestamp: string | undefined = req.body.timestamp;
 
     try {
-      // Log received data for debugging
-      console.log("Comment request received:", { reviewId, userId, text, timestamp });
-      
-      // Validate inputs
       reviewId = validateString(reviewId, "Review Id");
       userId = validateString(userId, "User Id");
       text = validateString(text, "Comment Text");
       timestamp = validateDateString(timestamp, "Timestamp");
+    } catch (e) {
+      handleErrors(res, e, 400);
+      return;
+    }
 
-      // Apply XSS protection
-      text = xss(text);
+    text = xss(text);
 
-      // Add the comment
+    try {
       const review = await addComment(reviewId, userId, text, timestamp);
       res.status(200).json(review);
     } catch (e) {
-      console.error("Error in comment route:", e);
-      if (e instanceof NotFoundError) {
-        res.status(404).json({ error: e.message });
-      } else if (e instanceof ValidationError) {
-        res.status(400).json({ error: e.message });
-      } else {
-        res.status(500).json({ 
-          error: "Could not add the comment. Please try again.",
-          details: e.message
-        });
-      }
+      handleErrors(res, e, 500);
     }
   })
   .patch(async (req: express.Request, res: express.Response) => {
@@ -155,8 +149,8 @@ router
     }
   });
 
-// Fixed like route with proper typing for Express
-router.route("/like/")
+router
+  .route("/like/")
   .post(async (req: express.Request, res: express.Response) => {
     if (!req.body) {
       res.status(400).json({ error: "No request body" });
@@ -166,46 +160,21 @@ router.route("/like/")
     let reviewId: string | undefined = req.body.reviewId;
     let userId: string | undefined = req.body.userId;
 
+    console.log("Like request received:", { reviewId, userId });
+
     try {
-      console.log('Like request received:', { reviewId, userId });
-
-      if (!reviewId) {
-        res.status(400).json({ error: "reviewId is required" });
-        return;
-      }
-
-      if (!userId) {
-        res.status(400).json({ error: "userId is required" });
-        return;
-      }
-
-      // Validate inputs but with better error handling
-      try {
-        reviewId = validateObjectId(reviewId, "Review Id");
-        userId = validateObjectId(userId, "User Id");
-      } catch (validationError) {
-        console.error('Validation error:', validationError);
-        res.status(400).json({ error: validationError.message || "Invalid input data" });
-        return;
-      }
-
-      // Try to toggle like with detailed error handling
-      try {
-        const review = await toggleLike(reviewId, userId);
-        res.status(200).json(review);
-      } catch (toggleError) {
-        console.error('Error toggling like:', toggleError);
-        res.status(500).json({ 
-          error: toggleError.message || "Failed to toggle like",
-          details: String(toggleError)
-        });
-      }
+      reviewId = validateObjectId(reviewId, "Review Id");
+      userId = validateObjectId(userId, "User Id");
     } catch (e) {
-      console.error('Unexpected error in like route:', e);
-      res.status(500).json({ 
-        error: "An unexpected error occurred", 
-        details: String(e)
-      });
+      handleErrors(res, e, 400);
+      return;
+    }
+
+    try {
+      const review = await toggleLike(reviewId, userId);
+      res.status(200).json(review);
+    } catch (e) {
+      handleErrors(res, e, 500);
     }
   });
 
@@ -272,35 +241,33 @@ router
     }
   });
 
-router
-  .route("/")
-  .post(async (req: express.Request, res: express.Response) => {
-    let userId: string | undefined = req.body.userId;
-    let placeId: string | undefined = req.body.placeId;
-    let text: string | undefined = req.body.text;
-    let timestamp: string | undefined = req.body.timestamp;
-    let image: string | undefined = req.body.image;
+router.route("/").post(async (req: express.Request, res: express.Response) => {
+  let userId: string | undefined = req.body.userId;
+  let placeId: string | undefined = req.body.placeId;
+  let text: string | undefined = req.body.text;
+  let timestamp: string | undefined = req.body.timestamp;
+  let image: string | undefined = req.body.image;
 
-    try {
-      userId = validateObjectId(userId, "User Id");
-      placeId = validateString(placeId, "Place Id");
-      text = validateString(text, "Review Text");
-      timestamp = validateDateString(timestamp, "Timestamp");
-      if (image) image = validateCloudinaryUrl(image, "Image URL");
-    } catch (e) {
-      handleErrors(res, e, 400);
-      return;
-    }
+  try {
+    userId = validateObjectId(userId, "User Id");
+    placeId = validateString(placeId, "Place Id");
+    text = validateString(text, "Review Text");
+    timestamp = validateDateString(timestamp, "Timestamp");
+    if (image) image = validateCloudinaryUrl(image, "Image URL");
+  } catch (e) {
+    handleErrors(res, e, 400);
+    return;
+  }
 
-    placeId = xss(placeId);
-    text = xss(text);
+  placeId = xss(placeId);
+  text = xss(text);
 
-    try {
-      let newReview = await addReview(userId, placeId, text, timestamp, image);
-      res.status(200).json(newReview);
-    } catch (e) {
-      handleErrors(res, e, 500);
-    }
-  })
+  try {
+    let newReview = await addReview(userId, placeId, text, timestamp, image);
+    res.status(200).json(newReview);
+  } catch (e) {
+    handleErrors(res, e, 500);
+  }
+});
 
 export default router;
