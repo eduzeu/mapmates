@@ -162,31 +162,6 @@ router
       handleErrors(res, e, 500);
     }
   })
-  .post(async (req: express.Request, res: express.Response) => {
-    let userId: string | undefined = req.body.userId;
-    let placeId: string | undefined = req.body.placeId;
-    let text: string | undefined = req.body.text;
-    let timestamp: string | undefined = req.body.timestamp;
-
-    try {
-      userId = validateString(userId, "User Id");
-      placeId = validateString(placeId, "Place Id");
-      text = validateString(text, "Review Text");
-      timestamp = validateDateString(timestamp, "Timestamp");
-    } catch (e) {
-      handleErrors(res, e, 400);
-      return;
-    }
-
-    text = xss(text);
-
-    try {
-      let newReview = await addReview(userId, placeId, text, timestamp);
-      res.status(200).json(newReview);
-    } catch (e) {
-      handleErrors(res, e, 500);
-    }
-  })
   .patch(async (req: express.Request, res: express.Response) => {
     let id: string | undefined = req.params.id;
     let text: string | undefined = req.body.text;
@@ -230,5 +205,33 @@ router
       handleErrors(res, e, 500);
     }
   });
+
+router
+  .route("/")
+  .post(async (req: express.Request, res: express.Response) => {
+    let userId: string | undefined = req.body.userId;
+    let placeId: string | undefined = req.body.placeId;
+    let text: string | undefined = req.body.text;
+    let timestamp: string | undefined = req.body.timestamp;
+
+    try {
+      userId = validateString(userId, "User Id");
+      placeId = validateString(placeId, "Place Id");
+      text = validateString(text, "Review Text");
+      timestamp = validateDateString(timestamp, "Timestamp");
+    } catch (e) {
+      handleErrors(res, e, 400);
+      return;
+    }
+
+    text = xss(text);
+
+    try {
+      let newReview = await addReview(userId, placeId, text, timestamp);
+      res.status(200).json(newReview);
+    } catch (e) {
+      handleErrors(res, e, 500);
+    }
+  })
 
 export default router;
