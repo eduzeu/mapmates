@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -14,6 +14,30 @@ function LocationDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const navigate = useNavigate();
+  
+  //TODO: uncomment when you need middleware theres another one down below in useEffect
+  // const isLoggedIn = async () => {
+  //   try {
+  //     const response = await fetch('http://localhost:3000/users/loggedIn', {
+  //       method: 'GET',
+  //       credentials: "include"
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+  //     const data = await response.json();
+  //     console.log(data);
+  //     if (!data.loggedIn) {
+  //       alert("You need to be logged in to access this page");
+  //       setLoggedIn(false);
+  //       navigate("/signin");
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching user:", err);
+  //   }
+  // };
 
   useEffect(() => {
     const fetchLocationData = async () => {
@@ -66,7 +90,8 @@ function LocationDetail() {
         setLoading(false);
       }
     };
-
+    //uncomment when you want middleware functioning
+    // isLoggedIn();
     fetchLocationData();
   }, [locationName]);
 
