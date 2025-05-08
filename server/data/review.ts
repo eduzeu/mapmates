@@ -17,6 +17,14 @@ export interface Review {
   placeId: ObjectId;
   text: string;
   timestamp: string;
+  comments: Comment[];
+}
+
+export interface Comment {
+  _id: ObjectId;
+  userId: ObjectId;
+  text: string;
+  timestamp: string;
 }
 
 interface ReviewEdit {
@@ -32,7 +40,7 @@ export const getReviewById = async (id: string): Promise<Review> => {
 
   if (!review) throw new NotFoundError("No review found with that id.");
 
-  return review as unknown as Review;
+  return review;
 };
 
 export const addReview = async (
@@ -51,6 +59,7 @@ export const addReview = async (
     placeId: new ObjectId(placeId),
     text: text,
     timestamp: timestamp,
+    comments: [],
   };
 
   const collection = await reviews();
@@ -141,3 +150,113 @@ export const reviewsByUser = async (userId: string): Promise<Review[]> => {
 
   return reviewList.toArray();
 };
+
+const getComment = async (commentId: string) => {
+  commentId = validateObjectId(commentId, "Comment Id");
+
+  const collection = await reviews();
+  const comment = await collection.findOne({ "comments._id": new ObjectId(commentId) });
+
+  if (!comment) throw new NotFoundError("No comment found with that id.");
+
+  return comment;
+}
+
+const getReviewOfComment = async (commentId: string) : Promise<Review> => {
+  commentId = validateObjectId(commentId, "Comment Id");
+  const collection = await reviews();
+  const review = await collection.findOne({ "comments._id": new ObjectId(commentId) });
+  if (!review) throw new NotFoundError("No review found with that id.");
+  return review;
+}
+
+export const addComment = async (
+  reviewId: string,
+  userId: string,
+  text: string,
+  timestamp: string
+): Promise<Review> => {
+  userId = validateObjectId(userId, "User Id");
+  reviewId = validateObjectId(reviewId, "Review Id");
+  text = validateString(text, "Comment Text");
+  timestamp = validateDateString(timestamp, "Timestamp");
+
+  let post = await getReviewById(reviewId);
+  if (!post) throw new NotFoundError("No review found with that id.");
+
+  const usersCommented = post.comments.map((c: Comment) => c.userId.toString());
+  if (usersCommented.includes(userId)) throw new ValidationError("User has already commented on this review.");
+
+  const newComment: Comment = {
+    _id: new ObjectId(),
+    userId: new ObjectId(userId),
+    text: text,
+    timestamp: timestamp,
+  };
+
+  post.comments.push(newComment);
+
+  const collection = await reviews();
+  const insertInfo = await collection.updateOne(
+    { _id: new ObjectId(reviewId) },
+    { $set: { comments: post.comments } }
+  );
+
+  if (!insertInfo.acknowledged || !insertInfo.insertedId)
+    throw new ServerError("Could not add the comment.");
+
+  const newId = insertInfo.insertedId.toString();
+  return await getReviewById(newId);
+}
+
+export const editComment = async (
+  commentId: string,
+  userId: string,
+  text: string,
+  timestamp: string
+) : Promise<Review> => {
+  userId = validateObjectId(userId, "User Id");
+  commentId = validateObjectId(commentId, "Comment Id");
+  text = validateString(text, "Comment Text");
+  timestamp = validateDateString(timestamp, "Timestamp");
+
+  const comment = await getComment(commentId);
+  if (comment.userId.toString() !== userId) throw new ValidationError("Cannot edit comment that doesn't belong to user.");
+
+  const collection = await reviews();
+  const updateInfo = await collection.updateOne(
+    { "comments._id": new ObjectId(commentId) },
+    { $set: { "comments.$.text": text, "comments.$.timestamp": timestamp } }
+  );
+
+  if (!updateInfo?.ok || !updateInfo?.value)
+    throw new ServerError("Could not update the review.");
+
+  return await getReviewOfComment(commentId);
+}
+
+export const deleteComment = async (
+  userId: string,
+  commentId: string
+) : Promise<Review> => {
+  userId = validateObjectId(userId, "User Id");
+  commentId = validateObjectId(commentId, "Comment Id");
+
+  let comment = await getComment(commentId);
+  if (!comment) throw new NotFoundError("No comment found with that id.");
+  if (!comment) throw new ValidationError("Cannot delete comment that doesn't exist or that user didn't make.");
+
+  let review = await getReviewOfComment(commentId);
+  const updatedComments = review.comments.filter((c: Comment) => c._id.toString() !== commentId);
+
+  const collection = await reviews();
+  const updateInfo = await collection.updateOne(
+    { "comments._id": new ObjectId(commentId) },
+    { $set: { comments: updatedComments } }
+  );
+
+  if (!updateInfo?.ok || !updateInfo?.value)
+    throw new ServerError("Could not update the review.");
+
+  return await getReviewOfComment(commentId);
+}
