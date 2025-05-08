@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 
@@ -19,7 +19,7 @@ function Home() {
         console.log(data);
         if (!data.loggedIn) {
           alert("You need to be logged in to access this page");
-          setLoggedIn(true);
+          setLoggedIn(false);
           navigate("/signin");
         }
       } catch (err) {

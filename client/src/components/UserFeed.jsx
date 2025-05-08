@@ -27,9 +27,10 @@ function UserFeed() {
         if (response.ok) {
           const data = await response.json();
           if (data.user) {
-            setUserId(data.user);
+            setUserId(data.user._id);
             // Switch to friends feed if user is logged in
             setFeedType("friends");
+            console.log("User ID:", data.user._id);
           }
         }
       } catch (err) {
