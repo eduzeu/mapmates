@@ -44,7 +44,8 @@ app.use('/', async (req: express.Request, res: express.Response, next) => {
     let didWork = await sessionTokenFunctions.updateExpiration(sessionId);
     res.cookie("session_token", sessionId, { maxAge: 60 * 60 * 1000, httpOnly: true });
   }
-  if(route == '/users' || route == '/users/signup'){
+  console.log(route, authorizedUser);
+  if(route == '/users/' || route == '/users/signup'){
     if(authorizedUser){
       res.json({error: "Already logged in"});
       return;

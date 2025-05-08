@@ -4,6 +4,7 @@ import xss from "xss";
 import * as sessionTokenFunctions from "../data/sessionTokens";
 import * as userFunctions from "../data/users";
 import { validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
+import { users } from '../config/mongoCollections.js';
 const router = Router();
 
 router.route("/")
@@ -48,6 +49,7 @@ router.route("/signup")
   //   res.render("../views/newAccount", { title: "Welcome to WiFly NYC" });
   // })
   .post(async (req: express.Request, res: express.Response) => {
+    const userCollection = await users();
     if (!req.body) {
       res.status(400).json({ success: false, error: "No request body" });
       return;
@@ -76,6 +78,14 @@ router.route("/signup")
     confirmPassword = xss(confirmPassword);
 
     try {
+      let usernameCheck = await userCollection.findOne({username: username.toLowerCase()});
+      let emailCheck = await userCollection.findOne({email: email.toLowerCase()});
+      if(usernameCheck){
+        throw("Invalid username");
+      }
+      if(emailCheck){
+        throw("Invalid email");
+      }
       const result = await userFunctions.addNewUser(username, email, password);
       res.json({ success: true });
       return;
