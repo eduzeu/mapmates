@@ -11,18 +11,17 @@ async function seed() {
   try {
     await client.connect();
     console.log("Connected to MongoDB");
-    
+
     const db = client.db(DB_NAME);
-    
+
     // Clear existing collections
     await db.collection("users").deleteMany({});
     await db.collection("reviews").deleteMany({});
-    
     console.log("Cleared existing collections");
-    
+
     // Create users
     const hashedPassword = await bcrypt.hash("Password123!", saltRounds);
-    
+
     const users = [
       {
         _id: new ObjectId(),
@@ -58,17 +57,17 @@ async function seed() {
         visitedPlaces: []
       }
     ];
-    
+
     // Make users friends with each other
     users[0].friends = [users[1]._id, users[2]._id];
     users[1].friends = [users[0]._id, users[2]._id];
     users[2].friends = [users[0]._id, users[1]._id];
-    
+
     // Insert users
     await db.collection("users").insertMany(users);
     console.log("Inserted users");
-    
-    // Define places (restaurants)
+
+    // Define places
     const places = [
       {
         _id: new ObjectId(),
@@ -101,44 +100,41 @@ async function seed() {
         coordinates: { latitude: 40.742298, longitude: -74.032368 }
       }
     ];
-    
-    // Add visited places to users with placeId
-    // User 1 has visited all places
+
+    // Add visited places to users
     users[0].visitedPlaces = places.map(place => ({
       place: place.name,
       cuisine: place.type,
-      placeId: place._id, // Add placeId to connect reviews
+      placeId: place._id,
       visitedAt: getRandomPastDate(30),
-      coordinates: { 
-        latitude: place.coordinates.latitude, 
-        longitude: place.coordinates.longitude 
+      coordinates: {
+        latitude: place.coordinates.latitude,
+        longitude: place.coordinates.longitude
       }
     }));
-    
-    // User 2 has visited some places
+
     users[1].visitedPlaces = places.slice(0, 3).map(place => ({
       place: place.name,
       cuisine: place.type,
-      placeId: place._id, // Add placeId to connect reviews
+      placeId: place._id,
       visitedAt: getRandomPastDate(60),
-      coordinates: { 
-        latitude: place.coordinates.latitude, 
-        longitude: place.coordinates.longitude 
+      coordinates: {
+        latitude: place.coordinates.latitude,
+        longitude: place.coordinates.longitude
       }
     }));
-    
-    // User 3 has visited a couple places
+
     users[2].visitedPlaces = places.slice(3, 5).map(place => ({
       place: place.name,
       cuisine: place.type,
-      placeId: place._id, // Add placeId to connect reviews
+      placeId: place._id,
       visitedAt: getRandomPastDate(90),
-      coordinates: { 
-        latitude: place.coordinates.latitude, 
-        longitude: place.coordinates.longitude 
+      coordinates: {
+        latitude: place.coordinates.latitude,
+        longitude: place.coordinates.longitude
       }
     }));
-    
+
     // Update users with visited places
     for (const user of users) {
       await db.collection("users").updateOne(
@@ -146,85 +142,81 @@ async function seed() {
         { $set: { visitedPlaces: user.visitedPlaces } }
       );
     }
-    
+
     console.log("Updated user visited places");
-    
+
     // Create reviews
     const reviews = [];
-    
+
     // User 1 reviews
     for (let i = 0; i < 3; i++) {
       const place = places[i];
       reviews.push({
         _id: new ObjectId(),
         userId: users[0]._id,
-        placeId: place._id,
         text: getRandomReview(place.name),
+        restaurantName: place.name,
         timestamp: getRandomPastDate(15).toISOString(),
         likes: [],
-        comments: [] // Empty comments array
+        comments: []
       });
     }
-    
+
     // User 2 reviews
     for (let i = 0; i < 2; i++) {
       const place = places[i];
       reviews.push({
         _id: new ObjectId(),
         userId: users[1]._id,
-        placeId: place._id,
         text: getRandomReview(place.name),
+        restaurantName: place.name,
         timestamp: getRandomPastDate(25).toISOString(),
         likes: [],
-        comments: [] // Empty comments array
+        comments: []
       });
     }
-    
+
     // User 3 reviews
     for (let i = 3; i < 5; i++) {
       const place = places[i];
       reviews.push({
         _id: new ObjectId(),
         userId: users[2]._id,
-        placeId: place._id,
         text: getRandomReview(place.name),
+        restaurantName: place.name,
         timestamp: getRandomPastDate(35).toISOString(),
         likes: [],
-        comments: [] // Empty comments array
+        comments: []
       });
     }
-    
-    // Add some comments to reviews
-    // User 2 comments on User 1's first review
+
+    // Add comments
     reviews[0].comments.push({
       _id: new ObjectId(),
       userId: users[1]._id,
       text: "I agree! This place is amazing!",
       timestamp: getRandomPastDate(10).toISOString()
     });
-    
-    // User 3 comments on User 1's first review
+
     reviews[0].comments.push({
       _id: new ObjectId(),
       userId: users[2]._id,
       text: "Thanks for the recommendation! I'll check it out.",
       timestamp: getRandomPastDate(8).toISOString()
     });
-    
-    // User 1 comments on User 2's review
+
     reviews[3].comments.push({
       _id: new ObjectId(),
       userId: users[0]._id,
       text: "I had a similar experience. The food is amazing!",
       timestamp: getRandomPastDate(5).toISOString()
     });
-    
+
     // Insert reviews
     await db.collection("reviews").insertMany(reviews);
     console.log("Inserted reviews");
-    
+
     console.log("Database seeded successfully!");
-    
   } catch (error) {
     console.error("Error seeding database:", error);
   } finally {
@@ -233,7 +225,7 @@ async function seed() {
   }
 }
 
-// Helper function to generate a random past date
+// Helpers
 function getRandomPastDate(maxDaysAgo) {
   const today = new Date();
   const daysAgo = Math.floor(Math.random() * maxDaysAgo);
@@ -242,7 +234,6 @@ function getRandomPastDate(maxDaysAgo) {
   return date;
 }
 
-// Helper function to generate a random review
 function getRandomReview(placeName) {
   const reviews = [
     `${placeName} was amazing! Would definitely come back again.`,
@@ -256,9 +247,7 @@ function getRandomReview(placeName) {
     `The ambiance at ${placeName} is unmatched. Perfect for a date night.`,
     `${placeName} has become one of my favorite spots in town. Will be returning soon!`
   ];
-  
   return reviews[Math.floor(Math.random() * reviews.length)];
 }
 
-// Run the seed function
 seed().catch(console.error);

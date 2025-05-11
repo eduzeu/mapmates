@@ -22,12 +22,12 @@ function App() {
         <NavBar />
         <div className="content">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/maps" element={<Map />} />
             <Route path="/feed" element={<UserFeed />} />
             <Route path="/location/:locationName" element={<SimpleLocationDetail />} />
             <Route path="/signout" element={<Logout />} />
-            <Route path="/signin" element={<Login />} />
+            <Route path="/" element={<Login />} />
             <Route path="/signup" element={<CreateAccount />} />
           </Routes>
         </div>

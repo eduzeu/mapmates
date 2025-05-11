@@ -7,7 +7,7 @@ import { users as usersCollection } from "../config/mongoCollections";
 import { validateDate, validateObjectId, validateString, validateNumber } from "../helpers/validation";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+import { reviews as reviewsCollection } from "../config/mongoCollections";
 const envPath = path.resolve(__dirname, '..', '..', '.env');
 dotenv.config({ path: envPath });
 
@@ -328,6 +328,40 @@ export const searchRestaurants = async (type: string) => {
   }
 };
 
+export const postRestaurantReview = async (id: string, review: string, restaurantName: string) => {
+  try {
+    id = validateObjectId(id);
+    review = validateString(review);
+    restaurantName = validateString(restaurantName);
+    const users = await usersCollection();
+    const reviews = await reviewsCollection();
+
+    const reviewId = new ObjectId();
+
+    await users.updateOne(
+      { _id: new ObjectId(id) },
+      { $push: { reviews: reviewId } }
+    );
+
+    const reviewObject = {
+      _id: reviewId,
+      userId: id,
+      restaurantName: restaurantName,
+      text: review,
+      timestamp: new Date(),
+      likes: [],
+      comments: []
+    }
+
+    const newRev = await reviews.insertOne(reviewObject);
+    return newRev;
+
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error(error.message);
+    return null;
+  }
+}
 
 // (async () => {
 //   const result = await searchRestaurants("chinese");

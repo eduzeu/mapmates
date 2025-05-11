@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "./userFeed.css";
+import "./UserFeed.css";
 
 function UserFeed() {
   const [feedData, setFeedData] = useState({
@@ -17,7 +17,6 @@ function UserFeed() {
   const [newComment, setNewComment] = useState('');
   const [commentingOn, setCommentingOn] = useState(null); // ID of post being commented on
 
-  // Check if user is logged in on component mount
   useEffect(() => {
     const checkUserSession = async () => {
       try {
@@ -36,12 +35,10 @@ function UserFeed() {
           }
         } else {
           console.log("User not logged in or session expired");
-          // User is not logged in, just continue with general feed
         }
       } catch (err) {
         console.error("Error checking user session:", err);
       } finally {
-        // Fetch the feed regardless of login status
         fetchFeed(1);
       }
     };
@@ -49,7 +46,6 @@ function UserFeed() {
     checkUserSession();
   }, []);
 
-  // Fetch feed when feedType changes
   useEffect(() => {
     if (userId || feedType === "general") {
       fetchFeed(1);
@@ -79,7 +75,6 @@ function UserFeed() {
       });
 
       if (!response.ok) {
-        // If we get a 404 or other error on friends/user feed, fall back to general feed
         if ((feedType === "friends" || feedType === "user") && response.status !== 200) {
           console.log(`Error with ${feedType} feed, falling back to general feed`);
           setFeedType("general");
@@ -90,7 +85,6 @@ function UserFeed() {
 
       const data = await response.json();
 
-      // If loading more posts (page > 1), append to existing posts
       if (page > 1) {
         setFeedData(prev => ({
           ...data,
@@ -123,10 +117,9 @@ function UserFeed() {
     return date.toLocaleString();
   };
 
-  // Helper to render comments safely
   const renderComments = (post) => {
     if (!post.comments || !Array.isArray(post.comments)) return null;
-    
+
     return (
       <div className="post-comments">
         {post.comments.length > 0 && (
@@ -141,24 +134,24 @@ function UserFeed() {
             <div className="comment-time">{formatDate(comment.timestamp)}</div>
           </div>
         ))}
-        
+
         {userId && commentingOn === post._id && (
           <div className="comment-form">
-            <textarea 
+            <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Write a comment..."
               className="comment-input"
             />
             <div className="comment-actions">
-              <button 
+              <button
                 onClick={() => handleAddComment(post._id)}
                 className="comment-submit"
                 disabled={!newComment.trim()}
               >
                 Submit
               </button>
-              <button 
+              <button
                 onClick={() => setCommentingOn(null)}
                 className="comment-cancel"
               >
@@ -172,65 +165,61 @@ function UserFeed() {
   };
 
   // Function to handle post likes
-// Function to handle post likes
-// Simplified function to handle post likes
-// Improved error handling for the like feature
-// Improved error handling for the like feature
-const handleLike = async (postId) => {
-  if (!userId) {
-    alert("Please sign in to like posts.");
-    return;
-  }
-
-  try {
-    // First check if the post has a likes array
-    // Temporarily disable optimistic UI update since it may be causing issues
-    
-    // Send request to server
-    const response = await fetch('http://localhost:3000/reviews/like/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        reviewId: postId,
-        userId
-      })
-    });
-    
-    // Check for server errors
-    if (!response.ok) {
-      let errorMessage = 'Failed to like post';
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || errorMessage;
-      } catch (e) {
-        // If we can't parse JSON, just use the response text
-        errorMessage = await response.text();
-      }
-      console.error('Server error response:', errorMessage);
-      throw new Error(`Server error: ${response.status} - ${errorMessage}`);
+  // Function to handle post likes
+  // Simplified function to handle post likes
+  // Improved error handling for the like feature
+  // Improved error handling for the like feature
+  const handleLike = async (postId) => {
+    if (!userId) {
+      alert("Please sign in to like posts.");
+      return;
     }
 
-    // Update UI with server response
-    const updatedReview = await response.json();
-    
-    setFeedData(prevData => ({
-      ...prevData,
-      posts: prevData.posts.map(post => 
-        post._id === postId ? {
-          ...post,
-          likes: updatedReview.likes || []
-        } : post
-      )
-    }));
-  } catch (error) {
-    console.error('Error liking post:', error);
-    // We're not going to reload the page on error anymore, just show the error
-    // and let the user try again if they want
-  }
-};
+    try {
+
+      const response = await fetch('http://localhost:3000/reviews/like/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          reviewId: postId,
+          userId
+        })
+      });
+
+      // Check for server errors
+      if (!response.ok) {
+        let errorMessage = 'Failed to like post';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If we can't parse JSON, just use the response text
+          errorMessage = await response.text();
+        }
+        console.error('Server error response:', errorMessage);
+        throw new Error(`Server error: ${response.status} - ${errorMessage}`);
+      }
+
+      const updatedReview = await response.json();
+
+      setFeedData(prevData => ({
+        ...prevData,
+        posts: prevData.posts.map(post =>
+          post._id === postId ? {
+            ...post,
+            likes: updatedReview.likes || []
+          } : post
+        )
+      }));
+    } catch (error) {
+      console.error('Error liking post:', error);
+      // We're not going to reload the page on error anymore, just show the error
+      // and let the user try again if they want
+    }
+  };
 
   // Function to toggle comment form
   const toggleCommentForm = (postId) => {
@@ -248,79 +237,79 @@ const handleLike = async (postId) => {
   };
 
   // Function to add a comment
- // Function to add a comment
-// Simplified function to add a comment
-// Simplified function to add a comment
-// Improved error handling for adding comments
-const handleAddComment = async (postId) => {
-  if (!userId || !newComment.trim()) {
-    if (!userId) {
-      alert("Please sign in to comment on posts.");
-    }
-    return;
-  }
-
-  try {
-    // Prepare comment data
-    const commentData = {
-      reviewId: postId,
-      userId,
-      text: newComment.trim(),
-      timestamp: new Date().toISOString()
-    };
-    
-    // Send request to server
-    const response = await fetch('http://localhost:3000/reviews/comment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify(commentData)
-    });
-    
-    // Check for server errors
-    if (!response.ok) {
-      let errorMessage = 'Failed to add comment';
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || errorMessage;
-      } catch (e) {
-        // If we can't parse JSON, just use the response text
-        errorMessage = await response.text();
+  // Function to add a comment
+  // Simplified function to add a comment
+  // Simplified function to add a comment
+  // Improved error handling for adding comments
+  const handleAddComment = async (postId) => {
+    if (!userId || !newComment.trim()) {
+      if (!userId) {
+        alert("Please sign in to comment on posts.");
       }
-      console.error('Server error response:', errorMessage);
-      throw new Error(`Server error: ${response.status} - ${errorMessage}`);
+      return;
     }
 
-    // Update UI with server response
-    const updatedReview = await response.json();
-    
-    // Update the feed data with the new comment
-    setFeedData(prevData => ({
-      ...prevData,
-      posts: prevData.posts.map(post => 
-        post._id === postId ? {
-          ...post,
-          comments: updatedReview.comments || []
-        } : post
-      )
-    }));
+    try {
+      // Prepare comment data
+      const commentData = {
+        reviewId: postId,
+        userId,
+        text: newComment.trim(),
+        timestamp: new Date().toISOString()
+      };
 
-    // Clear the comment form
-    setNewComment('');
-    setCommentingOn(null);
-  } catch (error) {
-    console.error('Error adding comment:', error);
-    // Show an error message to the user
-    alert('Failed to add comment. Please try again.');
-  }
-};
+      // Send request to server
+      const response = await fetch('http://localhost:3000/reviews/comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(commentData)
+      });
+
+      // Check for server errors
+      if (!response.ok) {
+        let errorMessage = 'Failed to add comment';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If we can't parse JSON, just use the response text
+          errorMessage = await response.text();
+        }
+        console.error('Server error response:', errorMessage);
+        throw new Error(`Server error: ${response.status} - ${errorMessage}`);
+      }
+
+      // Update UI with server response
+      const updatedReview = await response.json();
+
+      // Update the feed data with the new comment
+      setFeedData(prevData => ({
+        ...prevData,
+        posts: prevData.posts.map(post =>
+          post._id === postId ? {
+            ...post,
+            comments: updatedReview.comments || []
+          } : post
+        )
+      }));
+
+      // Clear the comment form
+      setNewComment('');
+      setCommentingOn(null);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      // Show an error message to the user
+      alert('Failed to add comment. Please try again.');
+    }
+  };
 
   // Check if user has liked a post
   const hasUserLiked = (post) => {
     if (!userId || !post.likes) return false;
-    return post.likes.some(like => 
+    return post.likes.some(like =>
       like._id ? like._id.toString() === userId : like.toString() === userId
     );
   };
@@ -373,11 +362,7 @@ const handleAddComment = async (postId) => {
         {feedData.posts && feedData.posts.map((post) => (
           <div className="feed-item" key={post._id}>
             <div className="post-header">
-              <img
-                src={post.userAvatar || "https://i.pravatar.cc/150?u=" + post.userId}
-                alt={`${post.username}'s avatar`}
-                className="user-avatar"
-              />
+
               <div className="post-meta">
                 <span className="user-name">{post.username}</span>
                 <span className="post-time">{formatDate(post.timestamp)}</span>
@@ -385,11 +370,9 @@ const handleAddComment = async (postId) => {
             </div>
 
             {/* Location */}
-            {post.locationName && (
+            {post.restaurantName && (
               <div className="post-location">
-                <Link to={`/location/${encodeURIComponent(post.locationName)}`}>
-                  <span className="location-pin">📍</span> {post.locationName}
-                </Link>
+                <p> 📍 {post.restaurantName} </p>
               </div>
             )}
 
@@ -401,9 +384,9 @@ const handleAddComment = async (postId) => {
             {/* Post image */}
             {post.image && (
               <div className="post-images">
-                <img 
-                  src={post.image} 
-                  alt="Post" 
+                <img
+                  src={post.image}
+                  alt="Post"
                   onError={(e) => {
                     e.target.src = `https://placehold.co/600x400?text=Review+at+${post.locationName || 'Location'}`;
                   }}
@@ -421,26 +404,26 @@ const handleAddComment = async (postId) => {
                 />
               </div>
             )}
-            
+
             {/* Comments */}
             {renderComments(post)}
-            
+
             {/* Post actions */}
             <div className="post-actions">
-              <button 
+              <button
                 className={`action-button ${hasUserLiked(post) ? 'liked' : ''}`}
                 onClick={() => handleLike(post._id)}
               >
                 {hasUserLiked(post) ? '❤️' : '👍'} {post.likes ? post.likes.length : 0}
               </button>
-              <button 
+              <button
                 className="action-button"
                 onClick={() => toggleCommentForm(post._id)}
               >
                 💬 {post.comments ? post.comments.length : 0}
               </button>
               {post.coordinates && (
-                <Link 
+                <Link
                   to={`/maps?lat=${post.coordinates.latitude || post.coordinates[0]}&lng=${post.coordinates.longitude || post.coordinates[1]}`}
                   className="view-on-map-link"
                 >

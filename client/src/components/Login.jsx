@@ -11,7 +11,7 @@ function Login() {
     loginPassword: ""
   });
   const [loggedIn, setLoggedIn] = useState(false);
-  
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,33 +33,33 @@ function Login() {
     });
     setFormData({ loginUser: "", loginPassword: "" });
     alert("Login Successful!");
-    navigate("/");
+    navigate("/home");
     console.log("Logging in with:", response);
   };
 
   useEffect(() => {
-  const isLoggedIn = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/users/loggedIn', {
-        method: 'GET',
-        credentials: "include"
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+    const isLoggedIn = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/users/loggedIn', {
+          method: 'GET',
+          credentials: "include"
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data);
+        if (data.loggedIn) {
+          alert("You are already logged in");
+          setLoggedIn(true);
+          navigate("/");
+        }
+      } catch (err) {
+        console.error("Error fetching user:", err);
       }
-      const data = await response.json();
-      console.log(data);
-      if (data.loggedIn) {
-        alert("You are already logged in");
-        setLoggedIn(true);
-        navigate("/");
-      }
-    } catch (err) {
-      console.error("Error fetching user:", err);
-    }
-  };
-  isLoggedIn();
-}, [navigate]);
+    };
+    isLoggedIn();
+  }, [navigate]);
 
 
   return (

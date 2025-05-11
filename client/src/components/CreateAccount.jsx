@@ -18,27 +18,27 @@ signup button */
     const [loggedIn, setLoggedIn] = useState(false);
     const navigate = useNavigate();
     useEffect(() => {
-      const isLoggedIn = async () => {
-        try {
-          const response = await fetch('http://localhost:3000/users/loggedIn', {
-            method: 'GET',
-            credentials: "include"
-          });
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const data = await response.json();
-          console.log(data);
-          if (data.loggedIn) {
-            alert("You are already logged in");
-            setLoggedIn(true);
-            navigate("/");
-          }
-        } catch (err) {
-          console.error("Error fetching user:", err);
-        }
-      };
-      isLoggedIn();
+        const isLoggedIn = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/users/loggedIn', {
+                    method: 'GET',
+                    credentials: "include"
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log(data);
+                if (data.loggedIn) {
+                    alert("You are already logged in");
+                    setLoggedIn(true);
+                    navigate("/");
+                }
+            } catch (err) {
+                console.error("Error fetching user:", err);
+            }
+        };
+        isLoggedIn();
     }, [navigate]);
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -60,7 +60,7 @@ signup button */
         });
         setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
         alert("Account Created Successfully!");
-        navigate("/signin");
+        navigate("/");
         console.log("Creating account with:", response);
     };
 

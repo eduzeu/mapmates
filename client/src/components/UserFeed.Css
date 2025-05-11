@@ -117,6 +117,7 @@
 
 .post-location {
   margin-bottom: 10px;
+  color: white;
 }
 
 .post-location a {
@@ -225,7 +226,8 @@
   gap: 10px;
 }
 
-.comment-submit, .comment-cancel {
+.comment-submit,
+.comment-cancel {
   padding: 5px 10px;
   border-radius: 5px;
   border: none;
@@ -331,20 +333,20 @@
   .feed-container {
     padding: 10px;
   }
-  
+
   .feed-selector {
     flex-wrap: wrap;
   }
-  
+
   .feed-selector button {
     flex: 1;
     min-width: 100px;
   }
-  
+
   .post-actions {
     flex-wrap: wrap;
   }
-  
+
   .action-button {
     flex: 1;
   }

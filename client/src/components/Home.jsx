@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import "../App.css"
 
 function Home() {
   const [loggedIn, setLoggedIn] = useState(false);
   const navigate = useNavigate();
+
   useEffect(() => {
     const isLoggedIn = async () => {
       try {
@@ -12,15 +13,12 @@ function Home() {
           method: 'GET',
           credentials: "include"
         });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
-        console.log(data);
         if (!data.loggedIn) {
           alert("You need to be logged in to access this page");
           setLoggedIn(false);
-          navigate("/signin");
+          navigate("/");
         }
       } catch (err) {
         console.error("Error fetching user:", err);
@@ -28,22 +26,36 @@ function Home() {
     };
     isLoggedIn();
   }, [navigate]);
+
   return (
-    <>
-      <h1> Welcome To MapMates :)</h1>
-      <p className="description"> At MapMates, you  have an interactive map displaying Hoboken Restaurants. You can head to the Restaurants by copying the
-        addres displayed when you click the pin. Once you visit a resturant, you can review it and it will count as
-        a visit. You can also add your own restaurant if you want to share it with the Stevens Community! </p>
-      <p> Other things you can do at MapMates are: </p>
-      <ul>
-        <li> Add friends</li>
-        <li> See other Stevens Students' Maps</li>
-        <li> Earn badges based on reviews and number of friends </li>
+    <div className="home-container">
+      <h1 className="home-title">🌍 Welcome To MapMates :)</h1>
+
+      <p className="description">
+        At MapMates, you can explore an interactive map of Hoboken’s restaurants. Click pins to copy addresses, add your own favorites, leave reviews, and connect with the Stevens community!
+      </p>
+
+      <p className="subtitle">Here’s what you can do at MapMates:</p>
+      <ul className="feature-list">
+        <li>🤝 Add friends</li>
+        <li>🏅 Earn badges for reviews and connections</li>
+        <li>💬 View your friends' restaurant reviews</li>
+        <li>📍 Discover new spots in Hoboken!</li>
       </ul>
-    </>
-  )
 
+      <div className="usage-guide">
+        <h3>🚀 How to Use MapMates:</h3>
+        <ul>
+          <li>🗺️ Click on the Map page to explore restaurants</li>
+          <li>📌 Use pins to view restaurant info</li>
+          <li>📝 Leave a review directly from a pin</li>
+          <li>📢 Visit the Feed page to see reviews, likes, and comments</li>
+          <li>➕ Add friends from the User Feed page</li>
+          <li>🔁 Post on the map and watch your feed update!</li>
+        </ul>
+      </div>
+    </div>
+  );
 }
-
 
 export default Home;
