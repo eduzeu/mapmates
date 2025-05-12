@@ -5,9 +5,8 @@
   "main": ".build/app.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx app.ts",
+    "start": "tsx app.ts",
     "build": "tsc",
-    "start": "node .build/app.js",
     "prepare": "npm run build"
   },
   "author": "",
