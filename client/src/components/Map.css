@@ -1,0 +1,57 @@
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  grid-area: 20px;
+  margin-bottom: 20px;
+}
+
+.form-container {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.submit-button {
+  margin-top: 10px;
+}
+
+.cancel-button {
+  margin-left: 10px;
+}
+
+.map-container {
+  height: 500px;
+  width: 100%;
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+}
+
+.textarea {
+  width: 90%;
+  padding: 8px;
+}
+
+.image-container {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 10px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.image-item {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}

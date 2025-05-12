@@ -7,6 +7,7 @@ import {
   deleteReview,
   editComment,
   getReviewById,
+  ReviewImage,
   reviewsByRestaurant,
   reviewsByUser,
   toggleLike,
@@ -14,9 +15,9 @@ import {
 } from "../data/review.ts";
 import { handleErrors } from "../helpers/errors.ts";
 import {
-  validateCloudinaryUrl,
   validateDateString,
   validateObjectId,
+  validateReviewImage,
   validateString,
 } from "../helpers/validation.ts";
 
@@ -242,28 +243,34 @@ router
   });
 
 router.route("/").post(async (req: express.Request, res: express.Response) => {
+  console.log(req.body);
   let userId: string | undefined = req.body.userId;
-  let placeId: string | undefined = req.body.placeId;
+  let restaurantName: string | undefined = req.body.restaurantName;
   let text: string | undefined = req.body.text;
   let timestamp: string | undefined = req.body.timestamp;
-  let image: string | undefined = req.body.image;
+  let imageUrl: string | undefined = req.body.image;
+  let altText: string | undefined = req.body.altText;
+
+  let image: ReviewImage | undefined = undefined;
 
   try {
     userId = validateObjectId(userId, "User Id");
-    placeId = validateString(placeId, "Place Id");
+    restaurantName = validateString(restaurantName, "Restaurant Name");
     text = validateString(text, "Review Text");
     timestamp = validateDateString(timestamp, "Timestamp");
-    if (image) image = validateCloudinaryUrl(image, "Image URL");
+    if (imageUrl || altText)
+      image = validateReviewImage({ url: imageUrl, altText }, "Review Image");
   } catch (e) {
     handleErrors(res, e, 400);
     return;
   }
 
-  placeId = xss(placeId);
+  restaurantName = xss(restaurantName);
   text = xss(text);
+  if (image?.altText) image.altText = xss(image.altText);
 
   try {
-    let newReview = await addReview(userId, placeId, text, timestamp, image);
+    let newReview = await addReview(userId, restaurantName, text, timestamp, image);
     res.status(200).json(newReview);
   } catch (e) {
     handleErrors(res, e, 500);

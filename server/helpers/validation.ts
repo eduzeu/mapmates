@@ -1,6 +1,7 @@
-import { isDate, isValid, parse, parseISO } from "date-fns";
+import { isDate, isValid, parseISO } from "date-fns";
 import { ObjectId } from "mongodb";
 import * as uuid from "uuid";
+import { ReviewImage } from "../data/review";
 import { ValidationError } from "./errors";
 
 export const validateString = (str: any, strName?: string): string => {
@@ -161,7 +162,7 @@ export const validateNumber = (num: any, numName?: string): number => {
   return num;
 };
 
-export const validateCloudinaryUrl = (url: any, urlName?: string) => {
+export const validateCloudinaryUrl = (url: any, urlName?: string): string => {
   url = validateString(url, urlName);
 
   let path =
@@ -182,4 +183,34 @@ export const validateCloudinaryUrl = (url: any, urlName?: string) => {
   return url;
 };
 
+const validateObject = (obj: any, objName?: string): object => {
+  if (!obj)
+    throw `${objName || "Provided data"} was not supplied.`
 
+  if (typeof obj !== "object")
+    throw `${objName || "Provided data"} is not an object.`
+
+  if (Array.isArray(obj))
+    throw `${objName || "Provided object"} is an array.`
+
+  if (Object.keys(obj).length === 0)
+    throw `${objName || "Provided object"} is empty.`
+
+  return obj;
+}
+
+export const validateReviewImage = (image: any, imageName?: string): ReviewImage => {
+  image = validateObject(image, imageName);
+
+  console.log(image);
+
+  if (image.url !== null && image.altText !== null) {
+    image.altText = validateString(image.altText,  "Image Alt Text");
+    image.url = validateCloudinaryUrl(image.url, "Image URL");
+    
+  } else if (image.url !== null || image.altText !== null) {
+    throw new ValidationError("An image must have alt text.");
+  }
+
+  return image;
+}

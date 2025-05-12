@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import axios from "axios";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import axios from "axios";
-import "./LocationDetail.css";
+import { useEffect, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { Link, useNavigate, useParams } from "react-router-dom";
 import markerIcon from '../assets/user.png';
+import "./LocationDetail.css";
 
 function LocationDetail() {
   const { locationName } = useParams();
@@ -330,9 +330,9 @@ function LocationDetail() {
         
         <div className="location-map-container">
           <MapContainer 
+            className="map-container"
             center={location.coordinates} 
             zoom={17} 
-            style={{ height: '100%', width: '100%', minHeight: '300px' }}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -371,9 +371,9 @@ function LocationDetail() {
                 
                 {review.image && (
                   <img 
-                    src={review.image} 
-                    alt="User uploaded" 
                     className="review-image" 
+                    src={review.image.url} 
+                    alt={review.image.altText} 
                   />
                 )}
               </div>

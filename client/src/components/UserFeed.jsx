@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./UserFeed.css";
 
@@ -382,22 +382,11 @@ function UserFeed() {
             </div>
 
             {/* Post image */}
-            {post.image && (
+            {post.image && post.image.url && (
               <div className="post-images">
                 <img
-                  src={post.image}
-                  alt="Post"
-                  onError={(e) => {
-                    e.target.src = `https://placehold.co/600x400?text=Review+at+${post.locationName || 'Location'}`;
-                  }}
-                />
-              </div>
-            )}
-            {!post.image && post.images && post.images.length > 0 && (
-              <div className="post-images">
-                <img
-                  src={post.images[0]}
-                  alt="Post"
+                  src={post.image.url}
+                  alt={post.image.altText}
                   onError={(e) => {
                     e.target.src = `https://placehold.co/600x400?text=Review+at+${post.locationName || 'Location'}`;
                   }}

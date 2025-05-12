@@ -6,21 +6,26 @@ import {
   ValidationError,
 } from "../helpers/errors.ts";
 import {
-  validateCloudinaryUrl,
   validateDateString,
   validateObjectId,
-  validateString,
+  validateReviewImage,
+  validateString
 } from "../helpers/validation.ts";
-import { restaurantExists } from "./restaurants.ts";
+import { addReviewToUser, restaurantExists } from "./restaurants.ts";
 
 export interface Review {
   userId: ObjectId;
-  placeId: string;
+  restaurantName: string;
   text: string;
-  image: string | null;
+  image?: ReviewImage;
   timestamp: string;
   likes: ObjectId[];
   comments: Comment[];
+}
+
+export interface ReviewImage {
+  url: string;
+  altText: string;
 }
 
 export interface Comment {
@@ -33,6 +38,7 @@ export interface Comment {
 interface ReviewEdit {
   text?: string;
   timestamp?: string;
+  image?: ReviewImage;
 }
 
 export const getReviewById = async (id: string): Promise<Review> => {
@@ -48,28 +54,29 @@ export const getReviewById = async (id: string): Promise<Review> => {
 
 export const addReview = async (
   userId: string,
-  placeId: string,
+  restaurantName: string,
   text: string,
   timestamp: string,
-  image?: string
+  image?: ReviewImage
 ): Promise<Review> => {
   userId = validateObjectId(userId, "User Id");
-  placeId = validateString(placeId, "Place Id");
+  restaurantName = validateString(restaurantName, "Restaurant Name");
   text = validateString(text, "Review Text");
   timestamp = validateDateString(timestamp, "Timestamp");
-  if (image) image = validateCloudinaryUrl(image, "Image Url");
+  if (image) image = validateReviewImage(image, "Review Image");
 
   const collection = await reviews();
   const existingReview = await collection.findOne({
     userId: new ObjectId(userId),
-    placeId: placeId,
+    restaurantName,
   });
+
   if (existingReview)
     throw new ValidationError("User has already reviewed this place.");
 
-  const newReview: Review = {
+  let newReview = {
     userId: new ObjectId(userId),
-    placeId: placeId,
+    restaurantName: restaurantName,
     text: text,
     timestamp: timestamp,
     image: image ? image : null,
@@ -83,6 +90,8 @@ export const addReview = async (
     throw new ServerError("Could not add the artist.");
 
   const newId = insertInfo.insertedId.toString();
+  await addReviewToUser(userId, newId);
+  
   return await getReviewById(newId);
 };
 
@@ -106,6 +115,10 @@ export const updateReview = async (
 
   if (editObj.timestamp) {
     editObj.timestamp = validateDateString(editObj.timestamp, "Timestamp");
+  }
+
+  if (editObj.image) {
+    editObj.image = validateReviewImage(editObj.image, "Review Image");
   }
 
   const updateInfo = await collection.findOneAndUpdate(
@@ -145,19 +158,16 @@ export const toggleLike = async (
   userId = validateObjectId(userId, "User Id");
 
   const review = await getReviewById(reviewId);
-  const liked = review.likes
-    .map((x) => x.toString())
-    .includes(userId);
-    
+  const liked = review.likes.map((x) => x.toString()).includes(userId);
+
   console.log(liked);
 
   const collection = await reviews();
-  
+
   let likes = review.likes;
   if (liked)
     likes = review.likes.filter((id) => id.toString() !== userId.toString());
-  else
-    likes.push(new ObjectId(userId));
+  else likes.push(new ObjectId(userId));
 
   console.log(likes);
 
@@ -167,8 +177,7 @@ export const toggleLike = async (
     { returnDocument: "after" }
   );
 
-  if (!newReview)
-    throw new ServerError("Could not update the review.");
+  if (!newReview) throw new ServerError("Could not update the review.");
 
   return newReview;
 };

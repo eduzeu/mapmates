@@ -1,6 +1,6 @@
 import express, { Router } from "express";
-import { getRestaurants, getRestaurantsById, searchRestaurants, searchRestaurantsByType, addRestaurant, deleteRestaurant, getAddedRestaurants, updateRestaurant, postRestaurantReview } from "../data/restaurants";
-import { validateObjectId, validateDateString, validateDate, validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
+import { addRestaurant, deleteRestaurant, getAddedRestaurants, getRestaurants, getRestaurantsById, searchRestaurantsByType, updateRestaurant } from "../data/restaurants";
+import { validateObjectId, validateString } from "../helpers/validation";
 const router = Router();
 
 router.route("/")
@@ -118,27 +118,5 @@ router.route("/delete")
       res.status(500).json({ error: error.message });
     }
   })
-router.route("/review")
-  .post(async (req: express.Request, res: express.Response) => {
-    try {
-      const userId: string = req.body.userId;
-      const review: string = req.body.review;
-      const RestaurantName: string = req.body.restaurantName;
-
-      validateObjectId(userId, "User Id");
-      validateString(review, "Review");
-      validateString(RestaurantName, "Restaurant Name");
-
-      const addReview = await postRestaurantReview(userId, review, RestaurantName);
-
-      res.status(200).json(addReview);
-
-    } catch (e: unknown) {
-      const error = e as Error;
-      console.error(error.message);
-      res.status(500).json({ error: error.message });
-    }
-  });
-
 
 export default router;

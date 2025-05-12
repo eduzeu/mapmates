@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useEffect, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import notVisited from '../assets/notVisited.png';
 import userIconImg from '../assets/user.png';
 import visited from '../assets/visited.png';
-import notVisited from '../assets/notVisited.png';
-import { RestButton, ButtonContainer } from "./RestButton";
-import { Link } from "react-router-dom";
+import { validateObjectId, validateReviewImage, validateString } from '../validation.js';
+import { ImageUpload } from "./ImageUpload.jsx";
+import "./Map.css";
+import { ButtonContainer, RestButton } from "./RestButton";
 
 const hobokenBounds = [
   [40.7684, -74.0401],
@@ -80,6 +82,9 @@ function Map() {
   const [showReview, setShowReview] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [currentRestaurantName, setCurrentRestaurantName] = useState("");
+  const [imageUrl, setImageUrl] = useState(null);
+  const [altText, setAltText] = useState("");
+  const [reviewError, setReviewError] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -234,30 +239,61 @@ function Map() {
     }
   };
 
-  const addReview = async (reviewText, userId, restaurantName) => {
+  const addReview = async (e) => {
+    e.preventDefault();
+
+    let userId = user;
+    let restaurantName;
+    let text;
+    let image = {};
+
     try {
-      const response = await fetch(`http://localhost:3000/restaurants/review`, {
+      userId = validateObjectId(userId, "User Id");
+      restaurantName = validateString(currentRestaurantName, "Restaurant Name");
+      text = validateString(reviewText, "Review Text");
+
+      if (imageUrl) {
+        image = validateReviewImage({ imageUrl: imageUrl, altText: altText }, "Review Image");
+      }
+
+    } catch (e) {
+      setReviewError(e.message);
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: "include",
         body: JSON.stringify({
-          userId,
-          review: reviewText,
-          restaurantName
+          userId: user,
+          restaurantName: restaurantName,
+          text: text,
+          timestamp: new Date().toISOString(),
+          "imageUrl": image.imageUrl ?? null,
+          altText: image.imageUrl ? image.altText : null
         })
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error);
       }
 
       const data = await response.json();
       console.log("Review submitted:", data);
 
+      setReviewError(null);
       setReviewText("");
       setShowReview(false);
       setCurrentRestaurantName("");
+      setImageUrl(null);
+      setAltText(null);
+
     } catch (err) {
+      setReviewError(err.message);
+      console.error(err.message);
       console.error("Error submitting review:", err);
     }
   };
@@ -272,8 +308,7 @@ function Map() {
     <>
       <div><h1>Welcome to your Map:</h1></div>
 
-
-      <div className="button-container" style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', marginBottom: '20px' }}>
+      <div className="button-container">
         <ButtonContainer>
           <RestButton text="Add Restaurant" onClick={() => { setShowForm(true); setShowSearchForm(false); }} />
           <RestButton text="Filter Restaurants" onClick={() => { setShowSearchForm(true); setShowForm(false); }} />
@@ -281,7 +316,7 @@ function Map() {
       </div>
 
       {showSearchForm && (
-        <div style={{ marginTop: '20px', padding: '10px', border: '1px solid black', borderRadius: '5px' }}>
+        <div className='form-container'>
           <h3>Search Restaurant</h3>
           <form onSubmit={handleSearchRestaurantSubmit}>
             <label htmlFor="cuisine">Cuisine:</label>
@@ -293,31 +328,31 @@ function Map() {
               <option value="cuban">Cuban</option>
               <option value="vietnamese">Vietnamese</option>
             </select>
-            <button type="submit" style={{ marginTop: '10px' }}>Search</button>
-            <button type="button" style={{ marginLeft: '10px' }} onClick={() => setShowSearchForm(false)}>Cancel</button>
+            <button className='submit-button' type="submit">Search</button>
+            <button className='cancel-button' type="button" onClick={() => setShowSearchForm(false)}>Cancel</button>
           </form>
         </div>
       )}
 
       {showForm && (
-        <div style={{ marginTop: '20px', padding: '10px', border: '1px solid black', borderRadius: '5px' }}>
+        <div className='form-container'>
           <h3>Add New Restaurant</h3>
           <form onSubmit={handleFormSubmit}>
             <label>Restaurant Name:</label>
             <input type="text" name="name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
             <label>Restaurant Type:</label>
             <input type="text" name="type" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} required />
-            <button type="submit" style={{ marginTop: '10px' }}>Submit</button>
-            <button type="button" style={{ marginLeft: '10px' }} onClick={() => setShowForm(false)}>Cancel</button>
+            <button className='submit-button' type="submit">Submit</button>
+            <button className='cancel-button' type="button" onClick={() => setShowForm(false)}>Cancel</button>
           </form>
         </div>
       )}
 
-      <div style={{ height: '500px', width: '100%' }}>
+      <div className='map-container'>
         <MapContainer
+          className='map'
           center={hobokenCenter}
           zoom={15}
-          style={{ height: '100%', width: '100%', borderRadius: '10px' }}
           maxBounds={hobokenBounds}
           maxBoundsViscosity={1.0}
           minZoom={14}
@@ -372,26 +407,64 @@ function Map() {
       </div>
 
       {showReview && (
-        <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#fefefe' }}>
+        <div className='form-container'>
           <h3>Leave a Review for <em>{currentRestaurantName}</em></h3>
-          <textarea
-            rows="4"
-            cols="50"
-            value={reviewText}
-            onChange={e => setReviewText(e.target.value)}
-            placeholder="Write your review here..."
-            style={{ width: '90%', padding: '8px' }}
-          />
-          <div style={{ marginTop: '10px' }}>
-            <button onClick={() => addReview(reviewText, user, currentRestaurantName)}>Submit Review</button>
-            <button onClick={() => {
+          <form onSubmit={addReview}>
+          {reviewError && (
+              <>
+                <p className='error'>Error: {reviewError}</p>
+                <br />
+              </>
+            )}
+            <label>Review Text</label>
+            <br/>
+            <textarea
+              className='textarea'
+              rows="4"
+              cols="50"
+              value={reviewText}
+              onChange={e => setReviewText(e.target.value)}
+              placeholder="Write your review here..."
+            />
+            {imageUrl && (
+              <div className='image-container'>
+                <img
+                  className='image-item'
+                  src={imageUrl}
+                  alt={altText || "Your image"}
+                />
+              </div>
+            )}
+            {imageUrl && (
+              <>
+                <label>Image Alt Text</label>
+                <br />
+                <textarea
+                  className='textarea'
+                  rows="4"
+                  cols="50"
+                  value={altText}
+                  onChange={e => setAltText(e.target.value)}
+                  placeholder="Write alt text for your image here..."
+                />
+              </>
+            )}
+            <br />
+            <ImageUpload setImageUrl={setImageUrl} setError={setReviewError} />
+            <br />
+            <br />
+            {imageUrl && <button type='button' onClick={() => setImageUrl(null)}>Remove Image</button>}
+            <br/>
+            <button className='submit-button' type='submit'>Submit</button>
+            <button type='button' className='cancel-button' onClick={() => {
               setShowReview(false);
               setReviewText("");
               setCurrentRestaurantName("");
-            }} style={{ marginLeft: '10px' }}>
-              Cancel
-            </button>
-          </div>
+              setImageUrl(null);
+              setAltText("");
+              setReviewError(null);
+            }}>Cancel</button>
+          </form>
         </div>
       )}
     </>
