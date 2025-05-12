@@ -327,6 +327,18 @@ function UserFeed() {
         </div>
       )}
 
+      <div className="how-it-works">
+        <h3>🧭 How MapMates Feed Works</h3>
+        <ul>
+          <li><span className="emoji">🧍‍♂️</span> <strong>All Activity</strong> shows only your own posts</li>
+          <li><span className="emoji">🌐</span> <strong>All Posts</strong> shows everything shared by the community</li>
+          <li><span className="emoji">🤝</span> <strong>Friends</strong> shows posts from people you follow</li>
+          <li><span className="emoji">📝</span> Add reviews from the map and they'll appear here too!</li>
+          <li><span className="emoji">✨</span> Stay active and grow your foodie journey on the feed!</li>
+        </ul>
+      </div>
+
+
       {/* Feed type selector */}
       <div className="feed-selector">
         <button

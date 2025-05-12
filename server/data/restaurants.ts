@@ -106,20 +106,40 @@ export const getRestaurants = async () => {
   }
 }
 
+
 export const getAddedRestaurants = async () => {
   try {
     const users = await usersCollection();
-    const newRestaurants = await users.find({
-      visitedPlaces: { $exists: true, $ne: [] }
-    });
-    const restaurants = await newRestaurants.toArray();
-    return restaurants;
+    const usersWithRestaurants = await users.find({ visitedPlaces: { $exists: true, $ne: [] } }).toArray();
 
+    const features = usersWithRestaurants.flatMap(user =>
+      user.visitedPlaces.map(place => ({
+        type: "Feature",
+        geometry: {
+          coordinates: [place.coordinates.longitude, place.coordinates.latitude]
+        },
+        properties: {
+          id: `${user._id}-${place.place}`,
+          name: place.place,
+          formatted: place.place,
+          contact: null,
+          website: null,
+          datasource: {
+            raw: {
+              cuisine: place.cuisine
+            }
+          }
+        }
+      }))
+    );
+
+    return features;
   } catch (e: unknown) {
     const error = e as Error;
-    console.error(error.message);
+    console.error("error in getAddedRestaurants:", error.message);
+    return [];
   }
-}
+};
 
 export const getRestaurantsById = async (id: string) => {
   try {
@@ -142,7 +162,8 @@ export const getRestaurantsById = async (id: string) => {
     return null;
   }
 }
-export const addRestaurant = async (name: string, type: string, visitDate: Date, id: string, lat: number, lon: number) => {
+
+export const addRestaurant = async (name: string, type: string, visitDate: Date, id, lat: number, lon: number) => {
   try {
     console.log(name, type, visitDate, id, lat, lon);
 
@@ -338,7 +359,7 @@ export const addReviewToUser = async (id: string, reviewId: string) => {
       { _id: new ObjectId(id) },
       { $push: { reviews: reviewId } }
     );
-    
+
     return;
 
   } catch (e: unknown) {

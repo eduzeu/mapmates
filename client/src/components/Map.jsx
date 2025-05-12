@@ -72,7 +72,7 @@ function Map() {
   const [restaurants, setRestaurants] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
-  const [formData, setFormData] = useState({ name: "", type: "", id: user });
+  const [formData, setFormData] = useState({ name: "", type: "" });
   const [showSearchForm, setShowSearchForm] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [visitedIds, setVisitedIds] = useState(() => {
@@ -91,6 +91,7 @@ function Map() {
       const loggedInStatus = await isLoggedIn();
       if (loggedInStatus) {
         await fetchUser();
+
         await fetchRestaurants();
       }
     };
@@ -112,6 +113,22 @@ function Map() {
       return false;
     }
   };
+  const
+    removeDuplicates = (restaurants) => {
+      const seen = new Set();
+      return restaurants.filter((r) => {
+        const coords = r.geometry?.coordinates;
+        const name = r.properties?.name?.toLowerCase();
+        if (!coords || !name) return false;
+
+        const key = `${coords[0].toFixed(5)},${coords[1].toFixed(5)}-${name}`;
+        if (seen.has(key)) return false;
+
+        seen.add(key);
+        return true;
+      });
+    };
+
 
   const fetchRestaurants = async () => {
     try {
@@ -120,6 +137,7 @@ function Map() {
         credentials: "include"
       });
       const data = await response.json();
+      console.log("Fetched restaurants:", data);
       if (Array.isArray(data)) {
         setRestaurants(data);
       } else {
@@ -154,9 +172,24 @@ function Map() {
         credentials: "include",
         body: JSON.stringify(newRestaurant)
       });
+
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      setFormData({ name: "", type: "", id: "" });
+
+      const createdRestaurant = await response.json();
+
+      setFormData({ name: "", type: "" });
       setShowForm(false);
+
+      const id = createdRestaurant.id || createdRestaurant._id || createdRestaurant.properties?.id;
+      if (id) {
+        setVisitedIds(prev => {
+          const updated = new Set(prev);
+          updated.add(id);
+          localStorage.setItem("visitedRestaurantIds", JSON.stringify(Array.from(updated)));
+          return updated;
+        });
+      }
+
       fetchRestaurants();
     } catch (e) {
       console.error("Error adding restaurant:", e.message);
@@ -170,7 +203,7 @@ function Map() {
     const newRestaurant = {
       name: formData.name,
       type: formData.type,
-      id: formData.id,
+      id: user,
       visitedAt: new Date().toISOString(),
       coordinates: {
         lat: userLocation.lat,
@@ -181,7 +214,7 @@ function Map() {
     await addNewRestaurant(newRestaurant);
   };
 
-  const handleChangeRestaurantPinColor = async (id, name, type) => {
+  const handleChangeRestaurantPinColor = async (id) => {
     setVisitedIds(prev => {
       const updated = new Set(prev);
       updated.add(id);
@@ -189,14 +222,7 @@ function Map() {
       return updated;
     });
 
-    await addNewRestaurant({
-      name, type, id: user,
-      visitedAt: new Date().toISOString(),
-      coordinates: {
-        lat: userLocation.lat,
-        long: userLocation.lng
-      }
-    });
+    await handleUpdateVisitedRestaurant(id);
   };
 
   const handleUpdateVisitedRestaurant = async (id) => {
@@ -283,6 +309,8 @@ function Map() {
 
       const data = await response.json();
       console.log("Review submitted:", data);
+      alert("Review has been added to the user feed!");
+
 
       setReviewError(null);
       setReviewText("");
@@ -307,6 +335,21 @@ function Map() {
   return (
     <>
       <div><h1>Welcome to your Map:</h1></div>
+      <h3> How it works? </h3>
+
+      <div className="how-it-works">
+        <h3>📍 How It Works</h3>
+        <ul>
+          <li><span className="emoji">🩷</span> <strong>Pink pins</strong> = Not visited yet</li>
+          <li><span className="emoji">🔵</span> <strong>Blue pins</strong> = Already visited</li>
+          <li><span className="emoji">ℹ️</span> Click a pin to view details</li>
+          <li><span className="emoji">📝</span> Click <em>"Leave a review"</em> to share your thoughts</li>
+          <li><span className="emoji">✅</span> Click <em>"Make it blue"</em> on a pink pin to mark it visited</li>
+          <li><span className="emoji">➕</span> You can add restaurants without visiting them — just drop a pin and later mark it as visited!</li>
+          <li><span className="emoji">📌</span> This app uses coordinates: if you add multiple restaurants at the same spot, only one will show. Try walking around a bit to drop pins at new spots!</li>
+        </ul>
+      </div>
+
 
       <div className="button-container">
         <ButtonContainer>
@@ -410,14 +453,14 @@ function Map() {
         <div className='form-container'>
           <h3>Leave a Review for <em>{currentRestaurantName}</em></h3>
           <form onSubmit={addReview}>
-          {reviewError && (
+            {reviewError && (
               <>
                 <p className='error'>Error: {reviewError}</p>
                 <br />
               </>
             )}
             <label>Review Text</label>
-            <br/>
+            <br />
             <textarea
               className='textarea'
               rows="4"
@@ -454,8 +497,8 @@ function Map() {
             <br />
             <br />
             {imageUrl && <button type='button' onClick={() => setImageUrl(null)}>Remove Image</button>}
-            <br/>
-            <button className='submit-button' type='submit'>Submit</button>
+            <br />
+            <button className='submit-button' type='submit' >Submit</button>
             <button type='button' className='cancel-button' onClick={() => {
               setShowReview(false);
               setReviewText("");
