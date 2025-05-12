@@ -12,8 +12,8 @@ config({ path: envPath });
 // https://vite.dev/config/
 export default defineConfig({
   define: {
-    cloudName: process.env.VITE_CLOUDINARY_CLOUD_NAME,
-    uploadPreset: process.env.VITE_CLOUDINARY_UPLOAD_PRESET
+    "cloudName": JSON.stringify(process.env.VITE_CLOUDINARY_CLOUD_NAME),
+    "uploadPreset": JSON.stringify(process.env.VITE_CLOUDINARY_UPLOAD_PRESET)
   },
   plugins: [react()],
 })
