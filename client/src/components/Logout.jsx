@@ -15,10 +15,8 @@ const navigate = useNavigate();
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
           const data = await response.json();
-          console.log(data);
           if (!data.loggedIn) {
-            alert("You need to be logged in to access this page");
-            navigate("/signin");
+            navigate("/");
           }
         } catch (err) {
           console.error("Error logging out:", err);
@@ -26,7 +24,7 @@ const navigate = useNavigate();
       };
       const logout = async () => {
         try{
-          const response = await fetch('http://localhost:3000/users/loggedIn', {
+          const response = await fetch('http://localhost:3000/users/logout', {
             method: 'GET',
             credentials: "include"
           });
@@ -34,13 +32,12 @@ const navigate = useNavigate();
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
           const data = await response.json();
-          console.log(data);
           if (!data.success){
             throw new Error(data.error);
           }
           else{
             alert("Logged out successfully");
-            navigate("/signin");
+            navigate("/");
           }
         } catch (err) {
           console.error("Error logging out:", err)

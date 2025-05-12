@@ -15,7 +15,6 @@ const NavBar = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data);
       if (data.loggedIn) {
         setLoggedIn(true);
       }

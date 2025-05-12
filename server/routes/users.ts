@@ -18,7 +18,7 @@ router.route("/")
     let password = req.body.loginPassword as string;
     try {
       username = validateString(username, "Username").toLowerCase();
-      // password = validatePassword(password, "Password");
+      password = validatePassword(password, "Password");
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.toString() });
       return;

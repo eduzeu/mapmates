@@ -21,7 +21,7 @@ export interface User {
   }[];
 }
 
-const saltRounds = 16;
+const saltRounds = 10;
 
 export const addNewUser = async (
   username: string,
@@ -69,16 +69,15 @@ export const checkUser = async (
 
   const userCollection: Collection<User> = await users();
   const user = await userCollection.findOne({ username });
-
   if (!user) {
     throw new Error('Invalid Login');
   }
 
   const isValid = await bcrypt.compare(password, user.password);
 
-  // if (!isValid) {
-  //   throw new Error('Invalid Login');
-  // }
+  if (!isValid) {
+    throw new Error('Invalid Login');
+  }
 
   return user._id as ObjectId;
 };

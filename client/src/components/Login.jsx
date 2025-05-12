@@ -31,10 +31,17 @@ function Login() {
       credentials: "include",
       body: JSON.stringify(formData)
     });
-    setFormData({ loginUser: "", loginPassword: "" });
-    alert("Login Successful!");
-    navigate("/home");
-    console.log("Logging in with:", response);
+    const data = await response.json();
+    if(data.success){
+      setFormData({ loginUser: "", loginPassword: "" });
+      alert("Login Successful!");
+      navigate("/home");
+    }
+    else{
+      setFormData({ loginUser: "", loginPassword: "" });
+      alert("Invalid login");
+    }
+    
   };
 
   useEffect(() => {

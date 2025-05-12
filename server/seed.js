@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 
 const MONGODB_URI = "mongodb://localhost:27017";
 const DB_NAME = "MapMates";
-const saltRounds = 16;
+const saltRounds = 10;
 
 async function seed() {
   const client = new MongoClient(MONGODB_URI);

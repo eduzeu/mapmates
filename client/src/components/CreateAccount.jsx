@@ -50,7 +50,6 @@ signup button */
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const response = await fetch(`http://localhost:3000/users/signup`, {
             method: 'POST',
             headers: {
@@ -58,10 +57,17 @@ signup button */
             },
             body: JSON.stringify(formData)
         });
-        setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
-        alert("Account Created Successfully!");
-        navigate("/");
-        console.log("Creating account with:", response);
+        const data = await response.json();
+        if(data.success){
+            setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
+            alert("Account Created Successfully!");
+            navigate("/");
+        }
+        else{
+            setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
+            let alertString = "Error when creating account: " + data.error;
+            alert(alertString);
+        }
     };
 
     return (
