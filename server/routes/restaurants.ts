@@ -1,17 +1,24 @@
 import express, { Router } from "express";
 import xss from "xss";
 import { addRestaurant, deleteRestaurant, getAddedRestaurants, getRestaurants, getRestaurantsById, searchRestaurantsByType, updateRestaurant } from "../data/restaurants";
+import { checkForCached, clearKey, restaurantKey, setJsonList } from "../helpers/redis.ts";
 import { validateCoordinates, validateDateString, validateObjectId, validateString } from "../helpers/validation";
+
 const router = Router();
 
 router.route("/")
   .get(async (req: express.Request, res: express.Response) => {
     try {
+      if (await checkForCached(restaurantKey, res)) return;
+
       const [apiRestaurants, addedRestaurants] = await Promise.all([
         getRestaurants(),
         getAddedRestaurants()
       ]);
       const allRestaurants = [...apiRestaurants, ...addedRestaurants];
+
+      await setJsonList(restaurantKey, allRestaurants, 3600);
+
       res.status(200).json(allRestaurants);
     } catch (e: unknown) {
       const error = e as Error;
@@ -24,7 +31,7 @@ router.route("/:id")
     let id = req.params.id;
 
     try {
-      id = validateObjectId(id, "Restaurant Id");
+      id = validateString(id, "Restaurant Id");
 
     } catch (e) {
       const error = e as Error;
@@ -34,6 +41,8 @@ router.route("/:id")
     }
 
     try {
+      if (await checkForCached(id, res)) return;
+
       const getRestbyId = await getRestaurantsById(id);
       res.status(200).json(getRestbyId);
 
@@ -65,6 +74,8 @@ router.route("/search")
     type = xss(type);
 
     try {
+      if (await checkForCached(type, res)) return;
+
       const findRests = await searchRestaurantsByType(type);
       res.status(200).json(findRests);
 
@@ -107,8 +118,8 @@ router.route("/add")
     type = xss(type);
 
     try {
-      console.log(req.body)
       const findRests = await addRestaurant(name, type, visitDate, id, coords.lat, coords.lon);
+      await clearKey(restaurantKey);
       res.status(200).json(findRests);
 
     } catch (e: unknown) {
@@ -140,6 +151,7 @@ router.route("/update")
 
     try {
       const updateRest = await updateRestaurant(id, date, name);
+      await clearKey(restaurantKey);
 
       if (updateRest === null) {
         res.status(404).json({ error: "Restaurant not found" });
@@ -181,6 +193,8 @@ router.route("/delete")
         res.status(404).json({ error: "Restaurant not found" });
         return;
       }
+
+      await clearKey(restaurantKey);
 
       res.status(200).json(delRest);
 

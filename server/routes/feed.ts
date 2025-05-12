@@ -5,15 +5,24 @@ import {
   getReviewsByUserWithInfo
 } from "../data/feed.ts";
 import { handleErrors } from "../helpers/errors.ts";
-import { validateObjectId, validatePageLimitString, validatePageNumberString } from "../helpers/validation.ts";
+import { validatePageLimitString, validatePageNumberString } from "../helpers/validation.ts";
 
 const router = Router();
 
 // Get general feed (all reviews)
 router.route("/")
   .get(async (req: express.Request, res: express.Response) => {
-    const page = validatePageNumberString(req.params.page ?? "1", "Page Number");
-    const limit = validatePageLimitString(req.params.limit ?? "10", "Page Limit");
+    let page: number;
+    let limit: number;
+
+    try {
+      page = validatePageNumberString(req.params.page ?? "1", "Page Number");
+      limit = validatePageLimitString(req.params.limit ?? "10", "Page Limit");
+
+    } catch (e) {
+      handleErrors(res, e, 400);
+      return;
+    }
 
     try {
       const feedData = await getAllReviewsWithUserInfo(page, limit);
@@ -27,12 +36,13 @@ router.route("/")
 // Get feed for a specific user
 router.route("/user/:id")
   .get(async (req: express.Request, res: express.Response) => {
-    const page = validatePageNumberString(req.params.page ?? "1", "Page Number");
-    const limit = validatePageLimitString(req.params.limit ?? "10", "Page Limit");
+    let page: number;
+    let limit: number;
     let userId = req.params.id;
 
     try {
-      userId = validateObjectId(userId, "User Id");
+      page = validatePageNumberString(req.params.page ?? "1", "Page Number");
+      limit = validatePageLimitString(req.params.limit ?? "10", "Page Limit");
 
     } catch (e) {
       handleErrors(res, e, 400);
@@ -51,12 +61,13 @@ router.route("/user/:id")
 // Get feed for a user and their friends
 router.route("/friends/:id")
   .get(async (req: express.Request, res: express.Response) => {
-    const page = validatePageNumberString(req.params.page ?? "1", "Page Number");
-    const limit = validatePageLimitString(req.params.limit ?? "10", "Page Limit");
+    let page: number;
+    let limit: number;
     let userId = req.params.id;
 
     try {
-      userId = validateObjectId(userId, "User Id");
+      page = validatePageNumberString(req.params.page ?? "1", "Page Number");
+      limit = validatePageLimitString(req.params.limit ?? "10", "Page Limit");
 
     } catch (e) {
       handleErrors(res, e, 400);

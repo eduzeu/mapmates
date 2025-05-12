@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { users as usersCollection } from "../config/mongoCollections";
+import { clearKey, setJson } from "../helpers/redis";
 import { validateCoordinates, validateDate, validateObjectId, validateString } from "../helpers/validation";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -144,14 +145,16 @@ export const getAddedRestaurants = async () => {
 export const getRestaurantsById = async (id: string) => {
   try {
 
-    id = validateObjectId(id);
+    id = validateString(id);
     const response = await axios.get(`https://api.geoapify.com/v2/places?categories=catering.restaurant&filter=circle:-74.028,40.743,1000&limit=20&apiKey=${apiKey}`);
 
     // console.log(response);
     const restaurant = response.data.features.find((rest: Restaurant) => rest.properties.housenumber === id);
 
     if (restaurant) {
+      await setJson(id, restaurant.properties, 3600);
       return restaurant.properties;
+
     } else {
       console.log("Restaurant not found");
       return null;
@@ -185,13 +188,14 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
       cuisine: type,
       visitedAt: visitDate,
       coordinates: { latitude: lat, longitude: lon },
-
     }
 
     const newPlace = await users.updateOne(
       { _id: new ObjectId(id) },
       { $push: { visitedPlaces: object } }
     );
+
+    await setJson(id, newPlace, 3600);
 
     return newPlace
 
@@ -223,6 +227,7 @@ export const updateRestaurant = async (id: string, date: Date, name: string) => 
       { $set: { "visitedPlaces.$.visitedAt": date } }
     );
     if (updatedPlace.modifiedCount > 0) {
+      await setJson(id, updatedPlace, 3600);
       return { message: `Place ${name} successfully updated` };
     }
     return { error: "Failed to update the place" };
@@ -262,6 +267,7 @@ export const deleteRestaurant = async (id: string, name: string) => {
     console.log(result);
 
     if (result.modifiedCount > 0) {
+      await clearKey(id);
       return { message: `Place ${name} successfully deleted from visitedPlaces` };
     } else {
       return { error: "Failed to delete the place" };
@@ -297,6 +303,7 @@ export const searchRestaurantsByType = async (type: string) => {
       }
     });
 
+    setJson(type, matches, 3600);
     return matches;
 
   } catch (e: unknown) {
