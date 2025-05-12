@@ -236,6 +236,9 @@ function UserFeed() {
     }
   };
 
+  const handleAddFriend = async (friendId) => {
+  }
+
   // Function to add a comment
   // Function to add a comment
   // Simplified function to add a comment
@@ -374,11 +377,13 @@ function UserFeed() {
         {feedData.posts && feedData.posts.map((post) => (
           <div className="feed-item" key={post._id}>
             <div className="post-header">
-
               <div className="post-meta">
                 <span className="user-name">{post.username}</span>
                 <span className="post-time">{formatDate(post.timestamp)}</span>
               </div>
+              <button className="add-friend-btn" onClick={() => handleAddFriend(post.userId)}>
+                ➕ Add Friend
+              </button>
             </div>
 
             {/* Location */}
@@ -442,30 +447,36 @@ function UserFeed() {
       {loading && <div className="loading">Loading feed...</div>}
 
       {/* Load more button */}
-      {feedData.hasNextPage && !loading && (
-        <button className="load-more-button" onClick={loadMore}>
-          Load More
-        </button>
-      )}
+      {
+        feedData.hasNextPage && !loading && (
+          <button className="load-more-button" onClick={loadMore}>
+            Load More
+          </button>
+        )
+      }
 
       {/* End of feed message */}
-      {!feedData.hasNextPage && feedData.posts && feedData.posts.length > 0 && !loading && (
-        <div className="end-of-feed">You've reached the end of the feed!</div>
-      )}
+      {
+        !feedData.hasNextPage && feedData.posts && feedData.posts.length > 0 && !loading && (
+          <div className="end-of-feed">You've reached the end of the feed!</div>
+        )
+      }
 
       {/* Empty feed message */}
-      {!loading && (!feedData.posts || feedData.posts.length === 0) && !error && (
-        <div className="empty-feed">
-          <p>No posts to display.</p>
-          {feedType === "friends" && userId && (
-            <p>Add friends to see their activity here!</p>
-          )}
-          {feedType === "user" && userId && (
-            <p>Visit new places to see your activity here!</p>
-          )}
-        </div>
-      )}
-    </div>
+      {
+        !loading && (!feedData.posts || feedData.posts.length === 0) && !error && (
+          <div className="empty-feed">
+            <p>No posts to display.</p>
+            {feedType === "friends" && userId && (
+              <p>Add friends to see their activity here!</p>
+            )}
+            {feedType === "user" && userId && (
+              <p>Visit new places to see your activity here!</p>
+            )}
+          </div>
+        )
+      }
+    </div >
   );
 }
 

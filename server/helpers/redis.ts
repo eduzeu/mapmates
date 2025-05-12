@@ -1,8 +1,11 @@
 import express from "express";
-import { createClient } from "redis";
 import { ServerError } from "./errors.ts";
+import { createClient } from 'redis';
 
-const client = createClient();
+const client = createClient({
+  url: 'redis://localhost:6379'
+});
+
 await client.connect();
 
 export const restaurantKey = "restaurants";

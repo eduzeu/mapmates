@@ -87,9 +87,26 @@
 
 .post-header {
   display: flex;
-  align-items: center;
-  margin-bottom: 15px;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
 }
+
+.add-friend-btn {
+  background-color: #ff69b4;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-friend-btn:hover {
+  background-color: #ff85c1;
+}
+
 
 .user-avatar {
   width: 40px;
