@@ -1,8 +1,7 @@
-import { Collection, ObjectId } from 'mongodb';
-import { users } from '../config/mongoCollections.js';
-import { reviews } from '../config/mongoCollections.js';
+import { ObjectId } from 'mongodb';
+import { reviews, users } from '../config/mongoCollections.js';
 import { NotFoundError, ServerError, ValidationError } from '../helpers/errors.ts';
-import { validateObjectId } from '../helpers/validation.ts';
+import { validateObjectId, validatePageLimit, validatePageNumber } from '../helpers/validation.ts';
 import { Review } from './review.ts';
 
 interface User {
@@ -26,8 +25,8 @@ export interface FeedPagination {
 
 export const getAllReviewsWithUserInfo = async (page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   try {
-    if (page < 1) throw new ValidationError('Page number must be at least 1');
-    if (limit < 1 || limit > 50) throw new ValidationError('Limit must be between 1 and 50');
+    page = validatePageNumber(page, "Page Number");
+    limit = validatePageLimit(limit, "Page Limit");
 
     const reviewCollection = await reviews();
     const userCollection = await users();
@@ -35,7 +34,7 @@ export const getAllReviewsWithUserInfo = async (page: number = 1, limit: number 
     const totalPosts = await reviewCollection.countDocuments({});
     const totalPages = Math.ceil(totalPosts / limit);
 
-    const reviewsList = await reviewCollection
+    const reviewsList: Review[] = await reviewCollection
       .find({})
       .sort({ timestamp: -1 })
       .skip((page - 1) * limit)
@@ -77,8 +76,8 @@ export const getAllReviewsWithUserInfo = async (page: number = 1, limit: number 
 export const getReviewsByUserWithInfo = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   try {
     userId = validateObjectId(userId, 'User ID');
-    if (page < 1) throw new ValidationError('Page number must be at least 1');
-    if (limit < 1 || limit > 50) throw new ValidationError('Limit must be between 1 and 50');
+    page = validatePageNumber(page, "Page Number");
+    limit = validatePageLimit(limit, "Page Limit");
 
     const reviewCollection = await reviews();
     const userCollection = await users();
@@ -119,8 +118,8 @@ export const getReviewsByUserWithInfo = async (userId: string, page: number = 1,
 export const getFriendsReviewsWithInfo = async (userId: string, page: number = 1, limit: number = 10): Promise<FeedPagination> => {
   try {
     userId = validateObjectId(userId, 'User ID');
-    if (page < 1) throw new ValidationError('Page number must be at least 1');
-    if (limit < 1 || limit > 50) throw new ValidationError('Limit must be between 1 and 50');
+    page = validatePageNumber(page, "Page Number");
+    limit = validatePageLimit(limit, "Page Limit");
 
     const reviewCollection = await reviews();
     const userCollection = await users();
@@ -134,7 +133,7 @@ export const getFriendsReviewsWithInfo = async (userId: string, page: number = 1
     const totalPosts = await reviewCollection.countDocuments({ userId: { $in: userAndFriendIds } });
     const totalPages = Math.ceil(totalPosts / limit);
 
-    const reviewsList = await reviewCollection
+    const reviewsList: Review[] = await reviewCollection
       .find({ userId: { $in: userAndFriendIds } })
       .sort({ timestamp: -1 })
       .skip((page - 1) * limit)

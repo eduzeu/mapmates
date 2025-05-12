@@ -1,6 +1,7 @@
 import express, { Router } from "express";
+import xss from "xss";
 import { addRestaurant, deleteRestaurant, getAddedRestaurants, getRestaurants, getRestaurantsById, searchRestaurantsByType, updateRestaurant } from "../data/restaurants";
-import { validateObjectId, validateString } from "../helpers/validation";
+import { validateCoordinates, validateDateString, validateObjectId, validateString } from "../helpers/validation";
 const router = Router();
 
 router.route("/")
@@ -20,11 +21,22 @@ router.route("/")
   });
 router.route("/:id")
   .get(async (req: express.Request, res: express.Response) => {
+    let id = req.params.id;
+
     try {
-      const id: string = req.params.id;
-      validateObjectId(id, "Restaurant Id");
+      id = validateObjectId(id, "Restaurant Id");
+
+    } catch (e) {
+      const error = e as Error;
+      console.error(error.message);
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    try {
       const getRestbyId = await getRestaurantsById(id);
       res.status(200).json(getRestbyId);
+
     } catch (e: unknown) {
       const error = e as Error;
       console.error(error.message);
@@ -33,11 +45,29 @@ router.route("/:id")
   });
 router.route("/search")
   .post(async (req: express.Request, res: express.Response) => {
+    if (!req.body) {
+      res.status(400).json({ error: "Recieved no information." });
+      return;
+    }
+
+    let type = req.body.type;
+
     try {
-      const type: string = req.body.type;
-      validateString(type, "Restaurant Type");
+      type = validateString(type, "Restaurant Type");
+
+    } catch (e) {
+      const error = e as Error;
+      console.error(error.message);
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    type = xss(type);
+
+    try {
       const findRests = await searchRestaurantsByType(type);
       res.status(200).json(findRests);
+
     } catch (e: unknown) {
       const error = e as Error;
       console.error(error.message);
@@ -46,22 +76,41 @@ router.route("/search")
   });
 router.route("/add")
   .post(async (req: express.Request, res: express.Response) => {
+    if (!req.body) {
+      res.status(400).json({ error: "Recieved no information." });
+      return;
+    }
+
+    let name = req.body.name;
+    let type = req.body.type;
+    let visitDate = req.body.visitedAt;
+    let id = req.body.id;
+    const lat = req.body.coordinates.lat;
+    const lon = req.body.coordinates.long;
+    let coords: {lat: number, lon: number};
+
+    try {
+      name = validateString(name, "Restaurant Name");
+      type = validateString(type, "Restaurant Type");
+      visitDate = validateDateString(visitDate, "Visit Date");
+      id = validateObjectId(id, "User Id");
+      coords = validateCoordinates({lat, lon}, "Coordinates");
+
+    } catch (e) {
+      const error = e as Error;
+      console.error(error.message);
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    name = xss(name);
+    type = xss(type);
+
     try {
       console.log(req.body)
-      const name: string = req.body.name;
-      const type: string = req.body.type;
-      const visitDate: Date = req.body.visitedAt;
-      const id: string = req.body.id;
-      const lat: number = req.body.coordinates.lat;
-      const lon: number = req.body.coordinates.long;
-      validateString(name, "Restaurant Name");
-      validateString(type, "Restaurant Type");
-      // validateDate(visitDate, "Visit Date");
-      // validateObjectId(id, "User Id");
-
-      const findRests = await addRestaurant(name, type, visitDate, id, lat, lon);
-
+      const findRests = await addRestaurant(name, type, visitDate, id, coords.lat, coords.lon);
       res.status(200).json(findRests);
+
     } catch (e: unknown) {
       const error = e as Error;
       console.error(error.message);
@@ -71,14 +120,25 @@ router.route("/add")
 
 router.route("/update")
   .put(async (req: express.Request, res: express.Response) => {
-    try {
-      const id: string = req.body.id;
-      const name: string = req.body.name;
-      const date: Date = req.body.visitedAt;
-      validateObjectId(id, "User Id");
-      validateString(name, "Restaurant Name");
-      // validateDate(date, "Visit Date");
+    let id = req.body.id;
+    let name = req.body.name;
+    let date = req.body.visitedAt;
 
+    try {
+      id = validateObjectId(id, "User Id");
+      name = validateString(name, "Restaurant Name");
+      date = validateDateString(date, "Visit Date");
+
+    } catch (e) {
+      const error = e as Error;
+      console.error(error.message);
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    name = xss(name);
+
+    try {
       const updateRest = await updateRestaurant(id, date, name);
 
       if (updateRest === null) {
@@ -98,11 +158,23 @@ router.route("/update")
 
 router.route("/delete")
   .delete(async (req: express.Request, res: express.Response) => {
+    let id = req.body.id;
+    let name = req.body.name;
+
     try {
-      const id: string = req.body.id;
-      const name: string = req.body.name;
-      validateObjectId(id, "User Id");
-      validateString(name, "Restaurant Name");
+      id = validateObjectId(id, "User Id");
+      name = validateString(name, "Restaurant Name");
+
+    } catch (e) {
+      const error = e as Error;
+      console.error(error.message);
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    name = xss(name);
+
+    try {
       const delRest = await deleteRestaurant(id, name);
 
       if (delRest === null) {

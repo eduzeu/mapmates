@@ -1,12 +1,12 @@
 import { Collection, ObjectId } from 'mongodb';
 import { users } from '../config/mongoCollections.js';
-import { validateEmailAddress, validatePassword, validateString } from '../helpers/validation';
+import { validateObjectId } from '../helpers/validation';
 import { User } from './users';
 
 export const earnFriendBadge = async (id: string) => {
   try {
     const userCollection: Collection<User> = await users();
-    const userId = validateString(id, 'User ID');
+    const userId = validateObjectId(id, 'User ID');
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
 
     if (!user) {
@@ -41,7 +41,7 @@ export const earnFriendBadge = async (id: string) => {
 export const earnReviewBadge = async (id: string) => {
   try {
     const userCollection: Collection<User> = await users();
-    const userId = validateString(id, 'User ID');
+    const userId = validateObjectId(id, 'User ID');
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
 
     if (!user) {

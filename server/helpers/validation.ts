@@ -1,4 +1,5 @@
 import { isDate, isValid, parseISO } from "date-fns";
+import isValidCoords from "is-valid-coords";
 import { ObjectId } from "mongodb";
 import * as uuid from "uuid";
 import { ReviewImage } from "../data/review";
@@ -213,4 +214,58 @@ export const validateReviewImage = (image: any, imageName?: string): ReviewImage
   }
 
   return image;
+}
+
+const validateStringNumber = (str: any, strName?: string): number => {
+  str = validateString(str, strName);
+  const num = validateNumber(Number(str));
+  return num;
+}
+
+export const validatePageNumber = (page: any, pageName?: string): number => {
+  page = validateNumber(page, pageName);
+
+  if (page < 1)
+    throw new ValidationError("Page must be at least 1.");
+
+  return page;
+}
+
+export const validatePageNumberString = (page: any, pageName?: string): number => {
+  page = validateStringNumber(page, pageName);
+  return validatePageNumber(page, pageName);
+}
+
+export const validatePageLimitString = (limit: any, limitName?: string): number => {
+  limit = validateStringNumber(limit, limitName);
+  return validatePageLimit(limit, limitName);
+}
+
+export const validatePageLimit = (limit: any, limitName?: string): number => {
+  limit = validateNumber(limit, limitName);
+
+  if (limit < 1)
+    throw new ValidationError("Limit must be at least 1.");
+
+  if (limit > 50)
+    throw new ValidationError("Limit must be at most 50.");
+
+  return limit;
+}
+
+export const validateCoordinates = (coords: any, coordsName?: string): {lat: number, lon: number} => {
+  coords = validateObject(coords, coordsName);
+
+  if (!coords.hasOwnProperty("lat") || !coords.hasOwnProperty("lon"))
+    throw new ValidationError("Coordinates must have lat and lon properties.");
+
+  const lat = validateStringNumber(coords.lat, "Latitude");
+  const lon = validateStringNumber(coords.lon, "Longitude");
+
+  const isValid = isValidCoords(lat, lon);
+  if (!isValid)
+    throw new ValidationError("Coordinates are not valid.");
+
+  return {lat, lon};
+ 
 }
