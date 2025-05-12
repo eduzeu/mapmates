@@ -14,6 +14,7 @@ import {
   updateReview,
 } from "../data/review.ts";
 import { handleErrors } from "../helpers/errors.ts";
+import { checkForCached, reviewKey } from "../helpers/redis.ts";
 import {
   validateDateString,
   validateObjectId,
@@ -41,6 +42,7 @@ router
       userId = validateObjectId(userId, "User Id");
       text = validateString(text, "Comment Text");
       timestamp = validateDateString(timestamp, "Timestamp");
+
     } catch (e) {
       handleErrors(res, e, 400);
       return;
@@ -51,6 +53,7 @@ router
     try {
       const review = await addComment(reviewId, userId, text, timestamp);
       res.status(200).json(review);
+
     } catch (e) {
       handleErrors(res, e, 500);
     }
@@ -81,6 +84,7 @@ router
     try {
       const review = await editComment(commentId, userId, text, timestamp);
       res.status(200).json(review);
+
     } catch (e) {
       handleErrors(res, e, 500);
     }
@@ -105,6 +109,7 @@ router
     try {
       const review = await deleteComment(userId, commentId);
       res.status(200).json(review);
+
     } catch (e) {
       handleErrors(res, e, 500);
     }
@@ -116,15 +121,19 @@ router
     let id: string | undefined = req.params.id;
 
     try {
-      id = validateObjectId(id, "Restaurant Id");
+      id = validateString(id, "Restaurant Id");
     } catch (e) {
       handleErrors(res, e, 400);
       return;
     }
 
     try {
+      const key = reviewKey(id);
+      if (await checkForCached(key, res)) return;
+
       let reviews = await reviewsByRestaurant(id);
       res.status(200).json(reviews);
+
     } catch (e) {
       handleErrors(res, e, 500);
     }
@@ -145,6 +154,7 @@ router
     try {
       let reviews = await reviewsByUser(id);
       res.status(200).json(reviews);
+
     } catch (e) {
       handleErrors(res, e, 500);
     }
@@ -192,8 +202,11 @@ router
     }
 
     try {
+      if (await checkForCached(id, res)) return;
+
       let review = await getReviewById(id);
       res.status(200).json(review);
+      
     } catch (e) {
       handleErrors(res, e, 500);
     }

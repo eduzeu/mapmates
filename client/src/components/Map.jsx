@@ -39,7 +39,7 @@ function MapBoundary() {
   return null;
 }
 
-function LocationMarker({ onLocationFound }) {
+function LocationMarker({ onLocationFound, outsideOfHoboken }) {
   const [position, setPosition] = useState(null);
   const map = useMap();
   const userIcon = createCustomIcon(userIconImg);
@@ -51,9 +51,11 @@ function LocationMarker({ onLocationFound }) {
       const isInHoboken = bounds.contains(e.latlng);
       if (isInHoboken) {
         setPosition(e.latlng);
+        outsideOfHoboken(false);
         map.flyTo(e.latlng, map.getZoom());
         onLocationFound?.(e.latlng);
       } else {
+        outsideOfHoboken(true);
         console.log("Location outside of Hoboken");
       }
     });
@@ -85,6 +87,7 @@ function Map() {
   const [imageUrl, setImageUrl] = useState(null);
   const [altText, setAltText] = useState("");
   const [reviewError, setReviewError] = useState(null);
+  const [outsideOfHoboken, setOutsideOfHoboken] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -198,6 +201,7 @@ function Map() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (outsideOfHoboken) return alert("You must be within Hoboken to add restaurants.");
     if (!userLocation) return alert("User location not available yet.");
 
     const newRestaurant = {
@@ -405,7 +409,7 @@ function Map() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapBoundary />
-          <LocationMarker onLocationFound={setUserLocation} />
+          <LocationMarker onLocationFound={setUserLocation} outsideOfHoboken={setOutsideOfHoboken} />
 
           {restaurants
             .filter(r => r.type === 'Feature' && r.geometry?.coordinates)

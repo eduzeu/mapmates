@@ -5,6 +5,7 @@ import {
   ServerError,
   ValidationError,
 } from "../helpers/errors.ts";
+import { clearKey, reviewKey, setJson } from "../helpers/redis.ts";
 import {
   validateDateString,
   validateObjectId,
@@ -91,7 +92,10 @@ export const addReview = async (
 
   const newId = insertInfo.insertedId.toString();
   await addReviewToUser(userId, newId);
-  
+
+  const key = reviewKey(restaurantName);
+  await clearKey(key);
+
   return await getReviewById(newId);
 };
 
@@ -130,6 +134,9 @@ export const updateReview = async (
   if (!updateInfo?.ok || !updateInfo?.value)
     throw new ServerError("Could not update the review.");
 
+  const key = reviewKey(updateInfo.value.restaurantName);
+  await clearKey(key);
+
   return updateInfo.value;
 };
 
@@ -146,6 +153,10 @@ export const deleteReview = async (id: string): Promise<Review> => {
 
   if (deleteResult.deletedCount === 0)
     throw new ServerError(`Could not delete the review with the id '${id}'.`);
+
+
+  const key = reviewKey(review.restaurantName);
+  await clearKey(key);
 
   return review;
 };
@@ -179,23 +190,30 @@ export const toggleLike = async (
 
   if (!newReview) throw new ServerError("Could not update the review.");
 
+  const key = reviewKey(newReview.restaurantName);
+  await clearKey(key);
+
   return newReview;
 };
 
 export const reviewsByRestaurant = async (
   restaurantId: string
 ): Promise<Review[]> => {
-  restaurantId = validateObjectId(restaurantId, "Restaurant Id");
+  restaurantId = validateString(restaurantId, "Restaurant Id");
 
   let exists = await restaurantExists(restaurantId);
   if (!exists) throw new NotFoundError("No restaurant found with that id.");
 
   const collection = await reviews();
   const reviewList = await collection.find({
-    placeId: new ObjectId(restaurantId),
-  });
+    restaurantName: restaurantId,
+  })
+  .toArray();
 
-  return reviewList.toArray();
+  const key = reviewKey(restaurantId);
+  await setJson(key, reviewList, 3600);
+
+  return reviewList;
 };
 
 export const reviewsByUser = async (userId: string): Promise<Review[]> => {
