@@ -322,7 +322,7 @@ function UserFeed() {
       {!userId && (
         <div className="auth-notice">
           <p>
-            <Link to="/signin">Sign in</Link> or <Link to="/signup">create an account</Link> to see personalized content and activity from friends.
+            <Link to="/">Sign in</Link> or <Link to="/signup">create an account</Link> to see personalized content and activity from friends.
           </p>
         </div>
       )}

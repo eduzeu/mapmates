@@ -37,8 +37,8 @@ router
     let timestamp: string | undefined = req.body.timestamp;
 
     try {
-      reviewId = validateString(reviewId, "Review Id");
-      userId = validateString(userId, "User Id");
+      reviewId = validateObjectId(reviewId, "Review Id");
+      userId = validateObjectId(userId, "User Id");
       text = validateString(text, "Comment Text");
       timestamp = validateDateString(timestamp, "Timestamp");
     } catch (e) {
@@ -67,8 +67,8 @@ router
     let timestamp: string | undefined = req.body.timestamp;
 
     try {
-      commentId = validateString(commentId, "Comment Id");
-      userId = validateString(userId, "User Id");
+      commentId = validateObjectId(commentId, "Comment Id");
+      userId = validateObjectId(userId, "User Id");
       text = validateString(text, "Comment Text");
       timestamp = validateDateString(timestamp, "Timestamp");
     } catch (e) {
@@ -95,8 +95,8 @@ router
     let userId: string | undefined = req.body.userId;
 
     try {
-      commentId = validateString(commentId, "Comment Id");
-      userId = validateString(userId, "User Id");
+      commentId = validateObjectId(commentId, "Comment Id");
+      userId = validateObjectId(userId, "User Id");
     } catch (e) {
       handleErrors(res, e, 400);
       return;
@@ -116,7 +116,7 @@ router
     let id: string | undefined = req.params.id;
 
     try {
-      id = validateString(id, "Restaurant Id");
+      id = validateObjectId(id, "Restaurant Id");
     } catch (e) {
       handleErrors(res, e, 400);
       return;
@@ -136,7 +136,7 @@ router
     let id: string | undefined = req.params.id;
 
     try {
-      id = validateString(id, "User Id");
+      id = validateObjectId(id, "User Id");
     } catch (e) {
       handleErrors(res, e, 400);
       return;
@@ -199,6 +199,11 @@ router
     }
   })
   .patch(async (req: express.Request, res: express.Response) => {
+    if (!req.body) {
+      res.status(400).json({ error: "No request body" });
+      return;
+    }
+
     let id: string | undefined = req.params.id;
     let text: string | undefined = req.body.text;
     let timestamp: string | undefined = req.body.timestamp;
@@ -215,7 +220,6 @@ router
 
     let editObj = {};
     if (text) editObj["text"] = xss(text);
-    if (timestamp) editObj["timestamp"] = xss(timestamp);
 
     try {
       let updatedReview = await updateReview(id, editObj);
