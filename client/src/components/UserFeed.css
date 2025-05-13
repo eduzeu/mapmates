@@ -125,6 +125,8 @@
 .user-name {
   font-weight: bold;
   color: #EDA2C0;
+  text-align: left;
+  display: block;
 }
 
 .post-time {

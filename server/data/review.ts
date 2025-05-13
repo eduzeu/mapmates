@@ -13,6 +13,7 @@ import {
   validateString
 } from "../helpers/validation.ts";
 import { addReviewToUser, restaurantExists } from "./restaurants.ts";
+import { getUsername } from "./users.ts";
 
 export interface Review {
   userId: ObjectId;
@@ -31,7 +32,10 @@ export interface ReviewImage {
 
 export interface Comment {
   _id: ObjectId;
-  userId: ObjectId;
+  user: {
+    id: ObjectId;
+    username: string;
+  };
   text: string;
   timestamp: string;
 }
@@ -269,9 +273,20 @@ export const addComment = async (
     throw new NotFoundError("No review found with that id.");
   }
 
+  const commented = await collection.findOne({
+    _id: new ObjectId(reviewId),
+    "comments.user.id": new ObjectId(userId)
+  })
+  if (commented) throw new ValidationError("User has already commented on this review.");
+
+  const username = await getUsername(userId);
+
   const newComment: Comment = {
     _id: new ObjectId(),
-    userId: new ObjectId(userId),
+    user: {
+      id: new ObjectId(userId),
+      username: username
+    },
     text: text,
     timestamp: timestamp,
   };

@@ -1,5 +1,5 @@
-import { MongoClient, ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
+import { MongoClient, ObjectId } from "mongodb";
 
 const MONGODB_URI = "mongodb://localhost:27017";
 const DB_NAME = "MapMates";
@@ -193,21 +193,30 @@ async function seed() {
     // Add comments
     reviews[0].comments.push({
       _id: new ObjectId(),
-      userId: users[1]._id,
+      user: {
+        id: users[1]._id,
+        username: users[1].username
+      },
       text: "I agree! This place is amazing!",
       timestamp: getRandomPastDate(10).toISOString()
     });
 
     reviews[0].comments.push({
       _id: new ObjectId(),
-      userId: users[2]._id,
+      user: {
+        id: users[2]._id,
+        username: users[2].username
+      },
       text: "Thanks for the recommendation! I'll check it out.",
       timestamp: getRandomPastDate(8).toISOString()
     });
 
     reviews[3].comments.push({
       _id: new ObjectId(),
-      userId: users[0]._id,
+      user: {
+        id: users[0]._id,
+        username: users[0].username
+      },
       text: "I had a similar experience. The food is amazing!",
       timestamp: getRandomPastDate(5).toISOString()
     });

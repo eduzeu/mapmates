@@ -131,7 +131,7 @@ function UserFeed() {
         )}
         {post.comments.map((comment, index) => (
           <div key={comment._id || index} className="comment-item">
-            <div className="comment-author">{comment.username || "User"}</div>
+            <div className="comment-author">{comment.user.username}</div>
             <div className="comment-text">{comment.text}</div>
             <div className="comment-time">{formatDate(comment.timestamp)}</div>
           </div>
@@ -309,7 +309,7 @@ function UserFeed() {
           errorMessage = await response.text();
         }
         console.error('Server error response:', errorMessage);
-        throw new Error(`Server error: ${response.status} - ${errorMessage}`);
+        throw new Error(errorMessage);
       }
 
       // Update UI with server response
@@ -332,7 +332,7 @@ function UserFeed() {
     } catch (error) {
       console.error('Error adding comment:', error);
       // Show an error message to the user
-      alert('Failed to add comment. Please try again.');
+      alert(error.message);
     }
   };
 

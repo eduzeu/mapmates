@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Collection, InsertOneResult, ObjectId } from 'mongodb';
 import { users } from '../config/mongoCollections.js';
-import { validateEmailAddress, validatePassword, validateString } from '../helpers/validation';
+import { validateEmailAddress, validateObjectId, validatePassword, validateString } from '../helpers/validation';
 //import { ca } from 'date-fns/locale';
 
 
@@ -82,3 +82,15 @@ export const checkUser = async (
   return user._id as ObjectId;
 };
 
+export const getUsername = async (id: string) : Promise<string> => {
+  id = validateObjectId(id);
+
+  const collection = await users();
+  const user = await collection.findOne({_id: new ObjectId(id)});
+  
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return user.username;
+}
