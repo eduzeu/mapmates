@@ -46,15 +46,15 @@ export const validateCloudinaryUrl = (url, urlName) => {
 };
 
 const validateObject = (obj, objName) => {
-  if (!obj) throw `${objName || "Provided data"} was not supplied.`;
+  if (!obj) throw new Error(`${objName || "Provided data"} was not supplied.`);
 
   if (typeof obj !== "object")
-    throw `${objName || "Provided data"} is not an object.`;
+    throw new Error(`${objName || "Provided data"} is not an object.`);
 
-  if (Array.isArray(obj)) throw `${objName || "Provided object"} is an array.`;
+  if (Array.isArray(obj)) throw new Error(`${objName || "Provided object"} is an array.`);
 
   if (Object.keys(obj).length === 0)
-    throw `${objName || "Provided object"} is empty.`;
+    throw new Error(`${objName || "Provided object"} is empty.`);
 
   return obj;
 };
@@ -71,19 +71,19 @@ export const validateReviewImage = (image, imageName) => {
 
 export const validateNumber = (num, numName) => {
   if (typeof num === "undefined")
-    throw new ValidationError(
+    throw new Error(
       `${numName || "Provided parameter"} was not supplied.`
     );
 
   if (typeof num !== "number")
-    throw new ValidationError(
+    throw new Error(
       `${
         numName || "Provided data"
       } is not of type 'number', but of type '${typeof num}'.`
     );
 
   if (isNaN(num))
-    throw new ValidationError(`${numName || "Provided number"} is NaN.`);
+    throw new Error(`${numName || "Provided number"} is NaN.`);
 
   return num;
 };
@@ -92,7 +92,65 @@ export const validatePageNumber = (page, pageName) => {
   page = validateNumber(page, pageName);
 
   if (page < 1)
-    throw new ValidationError("Page must be at least 1.");
+    throw new Error("Page must be at least 1.");
 
   return page;
+}
+
+export const validateEmailAddress = (email, emailName) => {
+  email = validateString(email, emailName);
+
+  // Based on regex in https://www.npmjs.com/package/email-validator?activeTab=code (see index.js)
+  // Modified to meet spec requirements
+  const regex =
+    /^(((\\@)?[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~]((\.?|\\@?)[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*)|(\"([-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~\s])*\"))@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+  if (!regex.test(email)) {
+    throw new Error(
+      `${emailName || "Provided string"} is not a valid email address.`
+    );
+  }
+  return email;
+};
+
+export const validatePassword = (password, passwordName) => {
+  password = validateString(password, passwordName);
+
+  if (password.length < 8) {
+    throw new Error("Password must be at least 8 characters long.");
+  }
+
+  const lowerRegex = /[a-z]+/g;
+  if (!lowerRegex.test(password)) {
+    throw new Error(
+      "Password must contain at least one lowercase letter."
+    );
+  }
+
+  const upperRegex = /[A-Z]+/g;
+  if (!upperRegex.test(password)) {
+    throw new Error(
+      "Password must contain at least one uppercase letter."
+    );
+  }
+
+  const symbolRegex = /[^A-Za-z0-9]+/g;
+  if (!symbolRegex.test(password)) {
+    throw new Error("Password must contain at least one symbol.");
+  }
+
+  return password;
+};
+
+export const validateCuisine = (cuisine, cuisineName) => {
+  cuisine = validateString(cuisine, cuisineName).toLowerCase();
+
+  const options = ["mexican", "indian", "chinese", "italian", "cuban", "vietnamese"]
+
+  if (!options.includes(cuisine)) {
+    throw new Error(
+      `${cuisineName || "Provided string"} is not a valid cuisine.`
+    );
+  }
+
+  return cuisine;
 }

@@ -92,20 +92,21 @@ router.route("/add")
       return;
     }
 
+    console.log(req.body);
     let name = req.body.name;
     let type = req.body.type;
     let visitDate = req.body.visitedAt;
     let id = req.body.id;
     const lat = req.body.coordinates.lat;
-    const lon = req.body.coordinates.long;
-    let coords: {lat: number, lon: number};
+    const long = req.body.coordinates.long;
+    let coords: {lat: number, long: number};
 
     try {
       name = validateString(name, "Restaurant Name");
       type = validateString(type, "Restaurant Type");
       visitDate = validateDateString(visitDate, "Visit Date");
       id = validateObjectId(id, "User Id");
-      coords = validateCoordinates({lat, lon}, "Coordinates");
+      coords = validateCoordinates({lat, long}, "Coordinates");
 
     } catch (e) {
       const error = e as Error;
@@ -118,7 +119,7 @@ router.route("/add")
     type = xss(type);
 
     try {
-      const findRests = await addRestaurant(name, type, visitDate, id, coords.lat, coords.lon);
+      const findRests = await addRestaurant(name, type, visitDate, id, coords.lat, coords.long);
       await clearKey(restaurantKey);
       res.status(200).json(findRests);
 

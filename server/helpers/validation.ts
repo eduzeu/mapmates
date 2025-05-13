@@ -253,19 +253,19 @@ export const validatePageLimit = (limit: any, limitName?: string): number => {
   return limit;
 }
 
-export const validateCoordinates = (coords: any, coordsName?: string): {lat: number, lon: number} => {
+export const validateCoordinates = (coords: any, coordsName?: string): {lat: number, long: number} => {
   coords = validateObject(coords, coordsName);
 
-  if (!coords.hasOwnProperty("lat") || !coords.hasOwnProperty("lon"))
+  if (!coords.hasOwnProperty("lat") || !coords.hasOwnProperty("long"))
     throw new ValidationError("Coordinates must have lat and lon properties.");
 
-  const lat = validateStringNumber(coords.lat, "Latitude");
-  const lon = validateStringNumber(coords.lon, "Longitude");
+  console.log(coords);
+  const lat = validateNumber(coords.lat, "Latitude");
+  const long = validateNumber(coords.long, "Longitude");
 
-  const isValid = isValidCoords(lat, lon);
+  const isValid = isValidCoords(lat, long);
   if (!isValid)
     throw new ValidationError("Coordinates are not valid.");
 
-  return {lat, lon};
- 
+  return {lat, long};
 }

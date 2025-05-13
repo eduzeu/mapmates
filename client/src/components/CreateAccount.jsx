@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import '../App.css';
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from 'styled-components';
+import '../App.css';
 import Logo from '../assets/logo.png';
+import { validateEmailAddress, validatePassword, validateString } from "../validation";
 
 
 
@@ -50,23 +50,37 @@ signup button */
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await fetch(`http://localhost:3000/users/signup`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-        const data = await response.json();
-        if(data.success){
-            setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
-            alert("Account Created Successfully!");
-            navigate("/");
-        }
-        else{
-            setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
-            let alertString = "Error when creating account: " + data.error;
-            alert(alertString);
+        try {
+            const loginUser = validateString(formData.loginUser, "Username");
+            const loginPassword = validatePassword(formData.loginPassword, "Password");
+            const loginEmail = validateEmailAddress(formData.loginEmail, "Email");
+            const confirmPassword = validatePassword(formData.confirmPassword, "Confirm Password");
+
+            if (loginPassword !== confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
+
+            const response = await fetch(`http://localhost:3000/users/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ loginUser, loginPassword, loginEmail, confirmPassword })
+            });
+            const data = await response.json();
+            if(data.success){
+                setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
+                alert("Account Created Successfully!");
+                navigate("/");
+            }
+            else{
+                setFormData({ loginUser: "", loginPassword: "", loginEmail: "", confirmPassword: "" });
+                let alertString = "Error when creating account: " + data.error;
+                alert(alertString);
+            }
+        } catch (e) {
+            alert(e.message);
         }
     };
 

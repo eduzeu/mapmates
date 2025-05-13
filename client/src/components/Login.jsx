@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import '../App.css';
-import Logo from '../assets/logo.png';
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from 'styled-components';
+import '../App.css';
+import Logo from '../assets/logo.png';
+import { validatePassword, validateString } from "../validation";
 
 function Login() {
   const navigate = useNavigate();
@@ -23,25 +24,39 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:3000/users/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: "include",
-      body: JSON.stringify(formData)
-    });
-    const data = await response.json();
-    if(data.success){
-      setFormData({ loginUser: "", loginPassword: "" });
-      alert("Login Successful!");
-      navigate("/home");
+    try {
+      let loginUser = formData.loginUser;
+      let loginPassword = formData.loginPassword;
+
+      try {
+        loginUser = validateString(loginUser);
+        loginPassword = validatePassword(loginPassword);
+        
+      } catch (e) {
+        throw new Error("Username or Password is incorrect.")
+      }
+
+      const response = await fetch('http://localhost:3000/users/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: "include",
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+      if(data.success){
+        setFormData({ loginUser: "", loginPassword: "" });
+        alert("Login Successful!");
+        navigate("/home");
+      }
+      else{
+        setFormData({ loginUser: "", loginPassword: "" });
+        alert("Invalid login");
+      }
+    } catch (e) {
+      alert(e.message);
     }
-    else{
-      setFormData({ loginUser: "", loginPassword: "" });
-      alert("Invalid login");
-    }
-    
   };
 
   useEffect(() => {

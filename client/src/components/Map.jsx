@@ -5,7 +5,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import notVisited from '../assets/notVisited.png';
 import userIconImg from '../assets/user.png';
 import visited from '../assets/visited.png';
-import { validateObjectId, validateReviewImage, validateString } from '../validation.js';
+import { validateCuisine, validateObjectId, validateReviewImage, validateString } from '../validation.js';
 import { ImageUpload } from "./ImageUpload.jsx";
 import "./Map.css";
 import { ButtonContainer, RestButton } from "./RestButton";
@@ -196,6 +196,7 @@ function Map() {
       fetchRestaurants();
     } catch (e) {
       console.error("Error adding restaurant:", e.message);
+      alert(e.message);
     }
   };
 
@@ -204,9 +205,21 @@ function Map() {
     if (outsideOfHoboken) return alert("You must be within Hoboken to add restaurants.");
     if (!userLocation) return alert("User location not available yet.");
 
+    let name = formData.name;
+    let type = formData.type;
+
+    try {
+      name = validateString(name, "Restaurant Name");
+      type = validateString(type, "Cuisine Type");
+
+    } catch (e) {
+      alert(e.message);
+      return;
+    }
+
     const newRestaurant = {
-      name: formData.name,
-      type: formData.type,
+      name: name,
+      type: type,
       id: user,
       visitedAt: new Date().toISOString(),
       coordinates: {
@@ -246,9 +259,11 @@ function Map() {
 
   const handleSearchRestaurantSubmit = async (e) => {
     e.preventDefault();
-    const selectedCuisine = e.target.cuisine.value;
+    let selectedCuisine = e.target.cuisine.value;
 
     try {
+      selectedCuisine = validateCuisine(selectedCuisine, "Cuisine");
+
       const response = await fetch(`http://localhost:3000/restaurants/search/`, {
         method: 'POST',
         headers: {
@@ -266,6 +281,7 @@ function Map() {
       setShowSearchForm(false);
     } catch (err) {
       console.error("Error searching restaurants:", err);
+      alert(err.message);
     }
   };
 

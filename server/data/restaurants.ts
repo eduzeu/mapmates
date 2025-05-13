@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { users as usersCollection } from "../config/mongoCollections";
 import { clearKey, setJson } from "../helpers/redis";
-import { validateCoordinates, validateDate, validateObjectId, validateString } from "../helpers/validation";
+import { validateCoordinates, validateDate, validateDateString, validateObjectId, validateString } from "../helpers/validation";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const envPath = path.resolve(__dirname, '..', '..', '.env');
@@ -166,18 +166,18 @@ export const getRestaurantsById = async (id: string) => {
   }
 }
 
-export const addRestaurant = async (name: string, type: string, visitDate: Date, id, lat: number, lon: number) => {
+export const addRestaurant = async (name: string, type: string, visitDate: string, id: string, lat: number, long: number) => {
   try {
-    console.log(name, type, visitDate, id, lat, lon);
+    console.log(name, type, visitDate, id, lat, long);
 
     name = validateString(name);
     type = validateString(type);
-    visitDate = validateDate(visitDate);
+    visitDate = validateDateString(visitDate);
     id = validateObjectId(id);
 
-    const coords = validateCoordinates({lat, lon});
+    const coords = validateCoordinates({lat, long});
     lat = coords.lat;
-    lon = coords.lon;
+    long = coords.long;
 
     // const coordinates = await getCoordinates();
     //now insert into mongo
@@ -187,7 +187,7 @@ export const addRestaurant = async (name: string, type: string, visitDate: Date,
       place: name,
       cuisine: type,
       visitedAt: visitDate,
-      coordinates: { latitude: lat, longitude: lon },
+      coordinates: { latitude: lat, longitude: long },
     }
 
     const newPlace = await users.updateOne(

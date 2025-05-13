@@ -1,10 +1,8 @@
 import express from "express";
-import { ServerError } from "./errors.ts";
 import { createClient } from 'redis';
+import { ServerError } from "./errors.ts";
 
-const client = createClient({
-  url: 'redis://localhost:6380'
-});
+const client = createClient();
 
 await client.connect();
 
