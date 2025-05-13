@@ -2,8 +2,8 @@ import cookieParser from 'cookie-parser';
 import cors from "cors";
 import express from "express";
 import session from "express-session";
-import configRoutes from "./routes/index.ts";
 import * as sessionTokenFunctions from "./data/sessionTokens";
+import configRoutes from "./routes/index.ts";
 
 
 const app = express();
@@ -11,7 +11,7 @@ const app = express();
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:4173"],
+  origin: ["http://localhost:5173", "http://localhost:4173", "http://3.128.200.32:3001"],
   credentials: true
 }));
 
