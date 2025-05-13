@@ -265,7 +265,7 @@ router.route("/").post(async (req: express.Request, res: express.Response) => {
   let restaurantName: string | undefined = req.body.restaurantName;
   let text: string | undefined = req.body.text;
   let timestamp: string | undefined = req.body.timestamp;
-  let imageUrl: string | undefined = req.body.image;
+  let imageUrl: string | undefined = req.body.imageUrl;
   let altText: string | undefined = req.body.altText;
 
   let image: ReviewImage | undefined = undefined;
