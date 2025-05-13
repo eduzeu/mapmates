@@ -12,20 +12,18 @@ function SimpleLocationDetail() {
       try {
         setLoading(true);
         setError(null);
-        
-        // For simplicity, we'll just use mock data
-        // In a real app, you would fetch this from your API
+
         const mockLocation = {
           name: decodeURIComponent(locationName),
           category: "Restaurant",
           description: `${decodeURIComponent(locationName)} is a popular spot in Hoboken.`,
           address: "Hoboken, NJ",
           coordinates: [40.7440, -74.0254],
-          rating: (Math.random() * 2 + 3).toFixed(1), // Random rating between 3 and 5
+          rating: (Math.random() * 2 + 3).toFixed(1),
           visitCount: Math.floor(Math.random() * 100),
           image: `https://placehold.co/600x400?text=${encodeURIComponent(locationName)}`
         };
-        
+
         setLocation(mockLocation);
       } catch (err) {
         console.error('Error fetching location details:', err);
@@ -54,11 +52,11 @@ function SimpleLocationDetail() {
   return (
     <div className="location-detail-container">
       <h1>{location.name}</h1>
-      
+
       <div className="location-image">
         <img src={location.image} alt={location.name} />
       </div>
-      
+
       <div className="location-info">
         <p><strong>Category:</strong> {location.category}</p>
         <p><strong>Rating:</strong> {'⭐'.repeat(Math.round(parseFloat(location.rating)))}</p>
@@ -66,19 +64,19 @@ function SimpleLocationDetail() {
         <p><strong>Address:</strong> {location.address}</p>
         <p>{location.description}</p>
       </div>
-      
+
       <div className="location-actions">
         <Link to={`/maps?lat=${location.coordinates[0]}&lng=${location.coordinates[1]}`} className="view-on-map">
           <button>View on Map</button>
         </Link>
       </div>
-      
+
       <div className="location-navigation">
         <Link to="/feed" className="back-link">
           &larr; Back to Feed
         </Link>
       </div>
-      
+
       <style jsx>{`
         .location-detail-container {
           max-width: 800px;

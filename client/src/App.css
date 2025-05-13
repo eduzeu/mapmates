@@ -281,3 +281,65 @@
   background: #fff5;
   border-radius: 12px;
 }
+
+.badges {
+  background-color: #f9f9f9;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 44px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+  margin-bottom: 50px;
+
+}
+
+.badges h3 {
+  margin-bottom: 12px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.badges ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.badges li {
+  font-size: 1.1rem;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+}
+
+.badges li:last-child {
+  border-bottom: none;
+}
+
+.emoji {
+  margin-right: 8px;
+  font-size: 1.3rem;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.badge-item:last-child {
+  border-bottom: none;
+}
+
+.badge-emoji {
+  font-size: 1.4rem;
+  margin-right: 10px;
+}
+
+.badge-text {
+  font-size: 1.1rem;
+  color: #333;
+}

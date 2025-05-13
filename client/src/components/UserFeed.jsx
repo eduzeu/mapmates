@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { validateObjectId, validateString } from "../validation";
 import "./UserFeed.css";
+// import { c } from "vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
 
 function UserFeed() {
   const [feedData, setFeedData] = useState({
@@ -18,6 +19,7 @@ function UserFeed() {
   const [newComment, setNewComment] = useState('');
   const [commentingOn, setCommentingOn] = useState(null); // ID of post being commented on
   const [currUserFriends, setCurrUserFriends] = useState([]);
+  const [badges, setBadges] = useState([]);
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -31,9 +33,10 @@ function UserFeed() {
           const data = await response.json();
           if (data.user && data.user._id) {
             setUserId(data.user._id);
+            handleGetBadges(data.user._id);
+
             let friendList = data.user.friends.map(id => id.toString());
             setCurrUserFriends(friendList);
-            // Switch to friends feed if user is logged in
             console.log("User ID:", data.user._id);
           }
         } else {
@@ -45,7 +48,6 @@ function UserFeed() {
         fetchFeed(1);
       }
     };
-
     checkUserSession();
   }, []);
 
@@ -75,14 +77,12 @@ function UserFeed() {
         credentials: "include" // Send cookies with request
       });
 
-      // Check for server errors
       if (!response.ok) {
         let errorMessage = 'Failed to fetch feed data.';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
         } catch (e) {
-          // If we can't parse JSON, just use the response text
           errorMessage = await response.text();
         }
         console.error('Server error response:', errorMessage);
@@ -102,11 +102,34 @@ function UserFeed() {
 
     } catch (err) {
       alert(err.message);
-      
+
     } finally {
       setLoading(false);
     }
   };
+  const handleGetBadges = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/badges/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to fetch badges.';
+      }
+      const data = await response.json();
+      console.log("Badges:", data);
+      setBadges(data);
+    } catch (error) {
+      console.error('Error fetching badges:', error);
+    }
+  };
+  useEffect(() => {
+    console.log("Badges updated:", badges);
+  }, [badges]);
 
   const loadMore = () => {
     if (feedData.hasNextPage) {
@@ -248,7 +271,7 @@ function UserFeed() {
   };
 
   const handleAddFriend = async (friendId) => {
-    try{
+    try {
       const friend = validateObjectId(friendId.toString(), "Friend Id");
 
       const response = await fetch('http://localhost:3000/users/addFriend', {
@@ -262,16 +285,16 @@ function UserFeed() {
         })
       });
       const data = await response.json();
-      if(!response.ok){
-        throw(data.error);
+      if (!response.ok) {
+        throw (data.error);
       }
-      if(!data.success){
-        throw(data.error);
+      if (!data.success) {
+        throw (data.error);
       }
       alert("Friend Added!");
       setCurrUserFriends([...currUserFriends, friendId]);
     }
-    catch(error){
+    catch (error) {
       alert(error);
       console.error(error);
     }
@@ -290,7 +313,7 @@ function UserFeed() {
       const user = validateObjectId(userId, "User Id");
       const reviewId = validateObjectId(postId, "Review Id");
       const text = validateString(newComment, "Comment Text");
-      
+
       const commentData = {
         reviewId,
         userId: user,
@@ -355,16 +378,16 @@ function UserFeed() {
   };
 
   const userIsFriends = (postId) => {
-    if (!userId || !postId){
+    if (!userId || !postId) {
       return true;
     }
-    if(currUserFriends.includes(postId)){
+    if (currUserFriends.includes(postId)) {
       return false;
     }
-    if(userId.toString() == postId){
+    if (userId.toString() == postId) {
       return false;
     }
-    else{
+    else {
       return true;
     }
   }
@@ -395,7 +418,7 @@ function UserFeed() {
         throw new Error(data.error || 'Failed to check if the Friendship Badge has been earned.');
       }
 
-      if (data["earned"]  === true) {
+      if (data["earned"] === true) {
         alert("Congratsulations! You've made 10 friends and earned the Friendship Badge!");
       }
 
@@ -427,6 +450,32 @@ function UserFeed() {
           <li><span className="emoji">✨</span> Stay active and grow your foodie journey on the feed!</li>
         </ul>
       </div>
+
+      {badges.length > 0 && (
+        <div className="badges">
+          <h3>🏅 Badges</h3>
+          <ul>
+            {badges.map((badge, index) => (
+              <li key={index} className="badge-item">
+                <span className="badge-emoji">{badge.emoji || '🏅'}</span>
+                <span className="badge-text">{badge.name}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+
+      {/* <div className="badges">
+        <h3>🏅 Badges</h3
+        <ul>
+          {badges.map((badge, index) => (
+            <li key={index}>
+              <span className="emoji">{badge.emoji}</span> {badge.name}
+            </li>
+          ))}
+        </ul>
+      </div> */}
 
 
       {/* Feed type selector */}

@@ -3,6 +3,46 @@ import { users } from '../config/mongoCollections.js';
 import { validateObjectId } from '../helpers/validation';
 import { User } from './users';
 
+
+export const getFriendBadges = async (id: string) => {
+  try {
+    const userCollection: Collection<User> = await users();
+    const userId = validateObjectId(id, 'User ID');
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const badges = user.badges.filter((badge) => badge.name === 'Friendship Badge');
+    return badges;
+
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error(error.message);
+    throw new Error('Error while getting friend badges');
+  }
+}
+
+export const getReviewBadges = async (id: string) => {
+  try {
+    const userCollection: Collection<User> = await users();
+    const userId = validateObjectId(id, 'User ID');
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const badges = user.badges.filter((badge) => badge.name === 'Reviewer Badge');
+    return badges;
+
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error(error.message);
+    throw new Error('Error while getting review badges');
+  }
+}
+
 export const earnFriendBadge = async (id: string) => {
   try {
     const userCollection: Collection<User> = await users();
