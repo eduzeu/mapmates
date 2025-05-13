@@ -1,6 +1,6 @@
 # MapMates
 
-Below are instructions to run both the client and the server on a local machine. However, if you just want to experience MapMates, go to deployed version at http://3.145.79.64:3001.
+Below are instructions to run both the client and the server on a local machine. However, if you just want to experience MapMates, go to deployed version at http://3.128.200.32:3001.
 
 ## Setup
 

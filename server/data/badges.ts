@@ -13,9 +13,15 @@ export const earnFriendBadge = async (id: string) => {
       throw new Error('User not found');
     }
 
+    const hasBadge = await userCollection.findOne({
+      _id: new ObjectId(userId),
+      'badges.name': 'Friendship Badge'
+    });
+    if (hasBadge) { return { alreadyEarned: true } };
+
     //check first if it's not reaching 10 by deleting a friend
     if (user?.friends.length > 10) {
-      return;
+      return { alreadyEarned: true };
     }
 
     if (user?.friends.length === 10) {
@@ -29,7 +35,11 @@ export const earnFriendBadge = async (id: string) => {
         { $push: { badges: badge } }
       );
 
+      return { earned: true };
     }
+
+    return { earned: false };
+
   } catch (e: unknown) {
     const error = e as Error;
     console.error(error.message);
@@ -48,10 +58,16 @@ export const earnReviewBadge = async (id: string) => {
       throw new Error('User not found');
     }
 
+    const hasBadge = await userCollection.findOne({
+      _id: new ObjectId(userId),
+      'badges.name': 'Reviewer Badge'
+    });
+    if (hasBadge) { return { alreadyEarned: true } };
+
     //check first if it's not reaching 10 by deleting a review
     if (user?.reviews.length > 5) {
       //nothing to do here, just return
-      return;
+      return { alreadyEarned: true };
     }
 
     if (user?.reviews.length === 5) {
@@ -64,7 +80,11 @@ export const earnReviewBadge = async (id: string) => {
         { _id: new ObjectId(userId) },
         { $push: { badges: badge } }
       );
+      return { earned: true };
     }
+
+    return { earned: false };
+
   } catch (e: unknown) {
     const error = e as Error;
     console.error(error.message);

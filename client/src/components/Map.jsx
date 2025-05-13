@@ -315,7 +315,6 @@ function Map() {
       console.log("Review submitted:", data);
       alert("Review has been added to the user feed!");
 
-
       setReviewError(null);
       setReviewText("");
       setShowReview(false);
@@ -323,12 +322,49 @@ function Map() {
       setImageUrl(null);
       setAltText(null);
 
+      await hasEarnedReviewBadge();
+
     } catch (err) {
       setReviewError(err.message);
       console.error(err.message);
       console.error("Error submitting review:", err);
     }
   };
+
+  const hasEarnedReviewBadge = async () => {
+    let userId = user;
+
+    try {
+      userId = validateObjectId(userId, "User Id");
+
+    } catch (e) {
+      alert(e.message);
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/badges/review/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to check if the Reviewer Badge has been earned.');
+      }
+
+      if (data["earned"] === true) {
+        alert("Congratsulations! You've made 5 reviews and earned the Reviewer Badge!");
+      }
+
+    } catch (e) {
+      alert(e.message);
+    }
+  }
 
   const hobokenCenter = [40.7440, -74.0254];
 

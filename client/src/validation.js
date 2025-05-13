@@ -68,3 +68,31 @@ export const validateReviewImage = (image, imageName) => {
 
   return image;
 };
+
+export const validateNumber = (num, numName) => {
+  if (typeof num === "undefined")
+    throw new ValidationError(
+      `${numName || "Provided parameter"} was not supplied.`
+    );
+
+  if (typeof num !== "number")
+    throw new ValidationError(
+      `${
+        numName || "Provided data"
+      } is not of type 'number', but of type '${typeof num}'.`
+    );
+
+  if (isNaN(num))
+    throw new ValidationError(`${numName || "Provided number"} is NaN.`);
+
+  return num;
+};
+
+export const validatePageNumber = (page, pageName) => {
+  page = validateNumber(page, pageName);
+
+  if (page < 1)
+    throw new ValidationError("Page must be at least 1.");
+
+  return page;
+}

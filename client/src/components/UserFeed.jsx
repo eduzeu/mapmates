@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { validateObjectId, validateString } from "../validation";
 import "./UserFeed.css";
 
 function UserFeed() {
@@ -61,11 +62,9 @@ function UserFeed() {
 
       switch (feedType) {
         case "user":
-          if (!userId) throw new Error("User ID is required for user feed");
           url = `http://localhost:3000/feed/user/${userId}?page=${page}`;
           break;
         case "friends":
-          if (!userId) throw new Error("User ID is required for friends feed");
           url = `http://localhost:3000/feed/friends/${userId}?page=${page}`;
           break;
         default:
@@ -76,13 +75,18 @@ function UserFeed() {
         credentials: "include" // Send cookies with request
       });
 
+      // Check for server errors
       if (!response.ok) {
-        if ((feedType === "friends" || feedType === "user") && response.status !== 200) {
-          console.log(`Error with ${feedType} feed, falling back to general feed`);
-          setFeedType("general");
-          return;
+        let errorMessage = 'Failed to fetch feed data.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If we can't parse JSON, just use the response text
+          errorMessage = await response.text();
         }
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        console.error('Server error response:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -97,8 +101,8 @@ function UserFeed() {
       }
 
     } catch (err) {
-      setError(err.message);
-      console.error("Error fetching feed:", err);
+      alert(err.message);
+      
     } finally {
       setLoading(false);
     }
@@ -172,13 +176,19 @@ function UserFeed() {
   // Improved error handling for the like feature
   // Improved error handling for the like feature
   const handleLike = async (postId) => {
-    if (!userId) {
-      alert("Please sign in to like posts.");
+    let user = userId;
+    let reviewId = postId;
+
+    try {
+      user = validateObjectId(user, "User Id");
+      reviewId = validateObjectId(reviewId, "Review Id");
+
+    } catch (e) {
+      alert(e.message);
       return;
     }
 
     try {
-
       const response = await fetch('http://localhost:3000/reviews/like/', {
         method: 'POST',
         headers: {
@@ -187,7 +197,7 @@ function UserFeed() {
         credentials: 'include',
         body: JSON.stringify({
           reviewId: postId,
-          userId
+          userId: user
         })
       });
 
@@ -202,7 +212,7 @@ function UserFeed() {
           errorMessage = await response.text();
         }
         console.error('Server error response:', errorMessage);
-        throw new Error(`Server error: ${response.status} - ${errorMessage}`);
+        throw new Error(errorMessage);
       }
 
       const updatedReview = await response.json();
@@ -217,9 +227,8 @@ function UserFeed() {
         )
       }));
     } catch (error) {
-      console.error('Error liking post:', error);
-      // We're not going to reload the page on error anymore, just show the error
-      // and let the user try again if they want
+      console.error(error.message);
+      alert(error.message);
     }
   };
 
@@ -240,6 +249,8 @@ function UserFeed() {
 
   const handleAddFriend = async (friendId) => {
     try{
+      const friend = validateObjectId(friendId.toString(), "Friend Id");
+
       const response = await fetch('http://localhost:3000/users/addFriend', {
         method: 'POST',
         headers: {
@@ -247,7 +258,7 @@ function UserFeed() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          friendId: friendId.toString()
+          friendId: friend
         })
       });
       const data = await response.json();
@@ -264,6 +275,9 @@ function UserFeed() {
       alert(error);
       console.error(error);
     }
+
+    // Check if user earned the badge.
+    await hasEarnedFriendBadge();
   }
 
   // Function to add a comment
@@ -272,19 +286,15 @@ function UserFeed() {
   // Simplified function to add a comment
   // Improved error handling for adding comments
   const handleAddComment = async (postId) => {
-    if (!userId || !newComment.trim()) {
-      if (!userId) {
-        alert("Please sign in to comment on posts.");
-      }
-      return;
-    }
-
     try {
-      // Prepare comment data
+      const user = validateObjectId(userId, "User Id");
+      const reviewId = validateObjectId(postId, "Review Id");
+      const text = validateString(newComment, "Comment Text");
+      
       const commentData = {
-        reviewId: postId,
-        userId,
-        text: newComment.trim(),
+        reviewId,
+        userId: user,
+        text,
         timestamp: new Date().toISOString()
       };
 
@@ -356,6 +366,41 @@ function UserFeed() {
     }
     else{
       return true;
+    }
+  }
+
+  const hasEarnedFriendBadge = async () => {
+    let user = userId;
+
+    try {
+      user = validateObjectId(user, "User Id");
+
+    } catch (e) {
+      alert(e.message);
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/badges/friend/${user}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to check if the Friendship Badge has been earned.');
+      }
+
+      if (data["earned"]  === true) {
+        alert("Congratsulations! You've made 10 friends and earned the Friendship Badge!");
+      }
+
+    } catch (e) {
+      alert(e.message);
     }
   }
 

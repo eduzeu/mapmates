@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../App.css"
+import "../App.css";
 
 function Home() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -29,7 +29,7 @@ function Home() {
 
   return (
     <div className="home-container">
-      <h1 className="home-title">🌍 Welcome To MapMates :)</h1>
+      <h1 className="home-title">🌍 Welcome To MapMates</h1>
 
       <p className="description">
         At MapMates, you can explore an interactive map of Hoboken’s restaurants. Click pins to copy addresses, add your own favorites, leave reviews, and connect with the Stevens community!
@@ -38,7 +38,7 @@ function Home() {
       <p className="subtitle">Here’s what you can do at MapMates:</p>
       <ul className="feature-list">
         <li>🤝 Add friends</li>
-        <li>🏅 Earn badges for reviews and connections</li>
+        <li>🏅 Earn badges when you make 5 Reviews and 10 Friends</li>
         <li>💬 View your friends' restaurant reviews</li>
         <li>📍 Discover new spots in Hoboken!</li>
       </ul>
