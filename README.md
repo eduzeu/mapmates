@@ -20,3 +20,15 @@ You will be able to access the server directly through http://localhost:3000/.
 On a fresh install or after making some changes, first run `npm run build`. This will be read during execution.
 
 Once built, run `npm start` to start the sever. You'll be able to access the server from http://localhost:5173/.
+
+### Restaurant Adding
+
+For the add restaurants feature, it is required for you to be Hoboken, otherwise you'll get an error message not allowing you to add a restaurant.
+
+It is recommend you use these coordinates:
+- Latitude: 40.746910
+- Longitude: -74.025787
+
+These can be adjusted slightly to different places in Hoboken depending on the tests.
+
+Depending on your browser, it may be possible to override your location. On [Chromium browsers](https://devtoolstips.org/tips/en/simulate-geolocation/) this is possible. It is possible on [Firefox](https://security.stackexchange.com/a/147176), but more complicated, and seemingly not possible with Safari (or at least isn't built in to the browser).
