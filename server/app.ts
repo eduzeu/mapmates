@@ -57,7 +57,7 @@ app.use('/', async (req: express.Request, res: express.Response, next) => {
   // }
   else {
     if (!authorizedUser) {
-      res.json({error: "Not logged in"});
+      res.status(400).json({error: "Not logged in"});
       return;
     }
   }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { validateObjectId, validateString } from "../validation";
 import "./UserFeed.css";
 // import { c } from "vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
@@ -12,6 +12,7 @@ function UserFeed() {
     totalPages: 0,
     hasNextPage: false
   });
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [feedType, setFeedType] = useState("general"); // "general", "user", "friends"
@@ -28,7 +29,6 @@ function UserFeed() {
           method: "GET",
           credentials: "include" // Send cookies with request
         });
-
         if (response.ok) {
           const data = await response.json();
           if (data.user && data.user._id) {
@@ -40,12 +40,12 @@ function UserFeed() {
             console.log("User ID:", data.user._id);
           }
         } else {
+          alert("You need to be logged in to access this page");
+          navigate("/");
           console.log("User not logged in or session expired");
         }
       } catch (err) {
         console.error("Error checking user session:", err);
-      } finally {
-        fetchFeed(1);
       }
     };
     checkUserSession();
@@ -101,7 +101,7 @@ function UserFeed() {
       }
 
     } catch (err) {
-      alert(err.message);
+      console.error(err.message);
 
     } finally {
       setLoading(false);

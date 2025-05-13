@@ -55,14 +55,13 @@ function Login() {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
         if (data.loggedIn) {
           alert("You are already logged in");
           setLoggedIn(true);
           navigate("/home");
         }
       } catch (err) {
-        console.error("Error fetching user:", err);
+        return;
       }
     };
     isLoggedIn();
