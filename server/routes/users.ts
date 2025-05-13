@@ -6,7 +6,6 @@ import * as userFunctions from "../data/users";
 import { validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
 import { users } from '../config/mongoCollections.js';
 import { ObjectId } from "mongodb";
-import session from "express-session";
 const router = Router();
 
 router.route("/")
@@ -88,7 +87,7 @@ router.route("/signup")
       if(emailCheck){
         throw("Invalid email");
       }
-      const result = await userFunctions.addNewUser(username, email, password);
+      await userFunctions.addNewUser(username, email, password);
       res.json({ success: true });
       return;
     } catch (error: any) {
