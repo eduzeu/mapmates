@@ -25,8 +25,6 @@ app.use(session({
 app.use(express.json());
 
 app.use('/', async (req: express.Request, res: express.Response, next) => {
-  const timestamp = new Date().toUTCString();
-  const method = req.method;
   const route = req.originalUrl;
   let authorizedUser = false;
   let sessionId;
@@ -41,7 +39,7 @@ app.use('/', async (req: express.Request, res: express.Response, next) => {
     authorizedUser = false;
   }
   if(authorizedUser){
-    let didWork = await sessionTokenFunctions.updateExpiration(sessionId);
+    await sessionTokenFunctions.updateExpiration(sessionId);
     res.cookie("session_token", sessionId, { maxAge: 60 * 60 * 1000, httpOnly: true });
   }
   if(route == '/users/' || route == '/users/signup'){

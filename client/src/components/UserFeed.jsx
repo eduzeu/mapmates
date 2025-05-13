@@ -16,11 +16,12 @@ function UserFeed() {
   const [userId, setUserId] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [commentingOn, setCommentingOn] = useState(null); // ID of post being commented on
+  const [currUserFriends, setCurrUserFriends] = useState([]);
 
   useEffect(() => {
     const checkUserSession = async () => {
       try {
-        const response = await fetch("http://localhost:3000/users/getuser", {
+        const response = await fetch("http://localhost:3000/users/getUser", {
           method: "GET",
           credentials: "include" // Send cookies with request
         });
@@ -29,8 +30,9 @@ function UserFeed() {
           const data = await response.json();
           if (data.user && data.user._id) {
             setUserId(data.user._id);
+            let friendList = data.user.friends.map(id => id.toString());
+            setCurrUserFriends(friendList);
             // Switch to friends feed if user is logged in
-            setFeedType("friends");
             console.log("User ID:", data.user._id);
           }
         } else {
@@ -237,6 +239,31 @@ function UserFeed() {
   };
 
   const handleAddFriend = async (friendId) => {
+    try{
+      const response = await fetch('http://localhost:3000/users/addFriend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          friendId: friendId.toString()
+        })
+      });
+      const data = await response.json();
+      if(!response.ok){
+        throw(data.error);
+      }
+      if(!data.success){
+        throw(data.error);
+      }
+      alert("Friend Added!");
+      setCurrUserFriends([...currUserFriends, friendId]);
+    }
+    catch(error){
+      alert(error);
+      console.error(error);
+    }
   }
 
   // Function to add a comment
@@ -317,6 +344,21 @@ function UserFeed() {
     );
   };
 
+  const userIsFriends = (postId) => {
+    if (!userId || !postId){
+      return true;
+    }
+    if(currUserFriends.includes(postId)){
+      return false;
+    }
+    if(userId.toString() == postId){
+      return false;
+    }
+    else{
+      return true;
+    }
+  }
+
   return (
     <div className="feed-container">
       <h2>MapMates Feed</h2>
@@ -381,9 +423,9 @@ function UserFeed() {
                 <span className="user-name">{post.username}</span>
                 <span className="post-time">{formatDate(post.timestamp)}</span>
               </div>
-              <button className="add-friend-btn" onClick={() => handleAddFriend(post.userId)}>
+              {userIsFriends(post.userId) && (<button className="add-friend-btn" onClick={() => handleAddFriend(post.userId)}>
                 ➕ Add Friend
-              </button>
+              </button>)}
             </div>
 
             {/* Location */}

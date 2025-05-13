@@ -59,7 +59,7 @@ function Login() {
         if (data.loggedIn) {
           alert("You are already logged in");
           setLoggedIn(true);
-          navigate("/");
+          navigate("/home");
         }
       } catch (err) {
         console.error("Error fetching user:", err);

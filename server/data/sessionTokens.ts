@@ -146,14 +146,10 @@ export const updateExpiration = async (
     expiresAt,
   };
 
-  const insertResult = await sessionTokensCollection.findOneAndReplace(
+  await sessionTokensCollection.findOneAndReplace(
     { sessionId: sessionToken },
     newObj
   );
-
-  if (!insertResult) {
-    throw new Error("Error inserting new object");
-  }
 
   return true;
 };

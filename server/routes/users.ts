@@ -5,6 +5,8 @@ import * as sessionTokenFunctions from "../data/sessionTokens";
 import * as userFunctions from "../data/users";
 import { validateEmailAddress, validatePassword, validateString } from "../helpers/validation";
 import { users } from '../config/mongoCollections.js';
+import { ObjectId } from "mongodb";
+import session from "express-session";
 const router = Router();
 
 router.route("/")
@@ -122,7 +124,6 @@ router.route("/logout").get(async (req: express.Request, res: express.Response) 
 router.route("/getUser").get(async (req: express.Request, res: express.Response) => {
   try {
     if(!req.cookies){
-      console.log("not logged in");
       res.status(400).json({error: "Not logged in"});
       return;
     }
@@ -162,6 +163,41 @@ router.route("/loggedIn").get(async (req: express.Request, res: express.Response
     return;
   } catch (error: any) {
     res.json({ loggedIn: false });
+    return;
+  }
+});
+
+router.route("/addFriend").post(async (req: express.Request, res: express.Response) => {
+  const userCollection = await users();
+  try{
+    const friendId = req.body.friendId;
+    if(!friendId){
+      throw("Invalid friend id");
+    }
+    const token = req.cookies["session_token"] as string | undefined;
+    let user;
+    if(token){
+      await sessionTokenFunctions.sessionChecker(token);
+      user = await sessionTokenFunctions.findUserFromSessionToken(token);
+    }
+    let friendsArray = user.friends.map(id => id.toString());
+    let friend = await userCollection.findOne({_id: new ObjectId(friendId)});
+    if(!friend){
+      throw("Invalid friend id");
+    }
+    if(friendsArray.includes(friendId)){
+      throw("Already friends");
+    }
+    user.friends.push(new ObjectId(friendId));
+    let inserted = await userCollection.findOneAndReplace({_id: user._id}, user);
+    if(!inserted){
+      throw("Error reinserting user object");
+    }
+    res.json({success: true});
+    return;
+  }
+  catch (e: any) {
+    res.status(400).json({success: false, error: e.toString()});
     return;
   }
 });
