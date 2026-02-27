@@ -1,5 +1,12 @@
 # MapMates
+MapMates is an application designed to help Stevens Students discover, track, and share restaurants through an interactive map based experience in Hoboken. The platform allows users to explore nearby restaurants, mark places they have visited, save favorites, and view activity from friends, turning food discovery into a social experience
 
+## Technical Features
+- Interactive map integration for real-time restaurant discovery and visualization  
+- RESTful API backend for handling users, restaurants, and social interactions  
+- Redis caching layer to optimize performance and reduce database load  
+- Persistent data storage using MongoDB for user profiles and activity history  
+- React-based frontend with responsive and dynamic UI components  
 Below are instructions to run both the client and the server on a local machine
 
 ## Setup
