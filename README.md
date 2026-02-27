@@ -1,6 +1,6 @@
 # MapMates
 
-Below are instructions to run both the client and the server on a local machine. However, if you just want to experience MapMates, go to deployed version via AWS at http://18.221.85.114:4173/.
+Below are instructions to run both the client and the server on a local machine
 
 ## Setup
 
@@ -43,3 +43,6 @@ It is recommend you use these coordinates:
 These can be adjusted slightly to different places in Hoboken depending on the tests.
 
 Depending on your browser, it may be possible to override your location. On [Chromium browsers](https://devtoolstips.org/tips/en/simulate-geolocation/) this is possible. It is possible on [Firefox](https://security.stackexchange.com/a/147176), but more complicated, and seemingly not possible with Safari (or at least isn't built in to the browser).
+
+### MAPMATES DEMO 
+If you want to watch a demo of how the website works, click here: https://drive.google.com/file/d/16PK7p4Z36UaCGCbr5w6wCOmg3rBQ46pn/view?usp=drive_link
