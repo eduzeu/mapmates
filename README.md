@@ -7,6 +7,7 @@ MapMates is an application designed to help Stevens Students discover, track, an
 - Redis caching layer to optimize performance and reduce database load  
 - Persistent data storage using MongoDB for user profiles and activity history  
 - React-based frontend with responsive and dynamic UI components  
+------------------------------------------------------------------------------------
 Below are instructions to run both the client and the server on a local machine
 
 ## Setup
